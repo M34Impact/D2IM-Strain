@@ -7,7 +7,7 @@ More details can be found in the following paper - please cite this paper if usi
 
 "Data-driven image mechanics (D2IM): a deep learning approach to predict displacement and strain fields from undeformed X-ray tomography images - Evaluation of bone mechanics"
 
-by Peter Soar, Marco Palanca, Enrico Dall'Ara and Gianluca Tozzi submitted to publication in Extreme Mechanical Letters, 2024. Currently available as a preprint at: https://www.biorxiv.org/content/10.1101/2023.09.21.558878v1.abstract
+by Peter Soar, Marco Palanca, Enrico Dall'Ara and Gianluca Tozzi published in Extreme Mechanical Letters, 2024. Paper is available at: [https://www.biorxiv.org/content/10.1101/2023.09.21.558878v1.abstract](https://doi.org/10.1016/j.eml.2024.102202)
 
 Mask input was generated from these scan slices. Target displacements (u,v,w) were obtained using the DIC/DVC software SPAM (https://www.spam-project.dev/).
 'Clinical' folder contains a few examples used for testing the sensitivity of the D2IM model to lower resolution input. The clinical scans these slices were extracted from were collected at the CT Scan Department, Northern General Hospital, Sheffield.
