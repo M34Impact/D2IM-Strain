@@ -3,6 +3,7 @@ import glob
 from typing import Optional, Tuple, List, Union, Dict
 
 from LoadingData.ImageLoader import ImageLoader
+import matplotlib.pyplot as plt
 
 
 class FolderImageLoader:
@@ -177,3 +178,10 @@ class FolderImageLoader:
             print(f"\nFailed Files:")
             for failed in self.failed_files:
                 print(f"  ✗ {os.path.basename(failed)}")
+
+    @staticmethod
+    def visualise(sample):
+        plt.imshow(sample, cmap='gray')
+        plt.title(f"Example 40 of Input Image")
+        plt.colorbar()
+        plt.show()
