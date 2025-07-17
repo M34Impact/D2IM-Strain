@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.ndimage import zoom
 
 class Strain:
     def __init__(self, be_mask, w_input_images) -> None:
@@ -14,7 +15,7 @@ class Strain:
         return ezz
 
     def __get_standardized_ezz(self):
-        vs = 39  # real voxel size um
+        # vs = 39  # real voxel size um
         ns = 50  # Node spacing
 
         strain_data = []
@@ -26,15 +27,28 @@ class Strain:
         target_ezz = np.array(strain_data)
         target_ezz = np.where(self.be_mask, target_ezz, 0.0)
 
+        # Standardisation
         global_mean = np.mean(target_ezz)
         global_std = np.std(target_ezz)
-
-        # change here...
         standardized_ezz = np.where(self.be_mask, (target_ezz - global_mean) / global_std, 0.0)
-        return standardized_ezz
+
+        for arr in target_ezz[3]:
+            for val in arr:
+                print("Value:", val)
+
+
+        # Log Normalisation
+        # log_normalized_ezz = np.where(self.be_mask, np.log(target_ezz), 0.0)
+        # # Normalise to [0, 1] if you want
+        # log_vals = log_normalized_ezz
+        # log_min = np.min(log_vals[self.be_mask])
+        # log_max = np.max(log_vals[self.be_mask])
+        # log_normalized_scaled = np.where(self.be_mask, (log_vals - log_min) / (log_vals - log_max), 0.0)
+
+        return target_ezz
 
     def visualise(self, example_index):
         plt.imshow(self.standardized_ezz[example_index], cmap='coolwarm')
-        plt.title(f"Example {example_index + 1} of w Image")
+        plt.title(f"Example {example_index + 1} of Strain Image")
         plt.colorbar()
         plt.show()

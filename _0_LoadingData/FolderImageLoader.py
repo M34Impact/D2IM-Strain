@@ -35,7 +35,7 @@ class FolderImageLoader:
                 loader = ImageLoader(file_path)
                 if loader.image is not None:
                     self.images.append(loader)
-                    print(f"✓ Loaded: {os.path.basename(file_path)}")
+                    # print(f"✓ Loaded: {os.path.basename(file_path)}")
                 else:
                     self.failed_files.append(file_path)
                     print(f"✗ Failed: {os.path.basename(file_path)}")
@@ -178,10 +178,3 @@ class FolderImageLoader:
             print(f"\nFailed Files:")
             for failed in self.failed_files:
                 print(f"  ✗ {os.path.basename(failed)}")
-
-    @staticmethod
-    def visualise(sample):
-        plt.imshow(sample, cmap='gray')
-        plt.title(f"Example 40 of Input Image")
-        plt.colorbar()
-        plt.show()

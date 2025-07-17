@@ -1,4 +1,6 @@
+from matplotlib import pyplot as plt
 from _0_LoadingData.FolderImageLoader import FolderImageLoader
+import re
 
 class ImageResizer:
     trainPath = '../data/Input/Scan'
@@ -25,6 +27,22 @@ class ImageResizer:
                 print(f"Resized {resized_count} images (maintaining aspect ratio)")
 
         # Print resized images
+        # for loader in self.allLoaders:
+        #     print(loader.print_details())
+
+        # Sort by filename
+        def natural_key(item):
+            filename = item.metadata['filename']
+            return [int(text) if text.isdigit() else text.lower()
+                    for text in re.split(r'(\d+)', filename)]
         for loader in self.allLoaders:
-            print(loader.print_details())
+            loader.images.sort(key=natural_key)
+
         return self.allLoaders
+
+    def visualise(self, example_index):
+        loader = self.allLoaders[0].images[example_index]
+        plt.imshow(loader.image, cmap='gray')
+        plt.title(f"Example {example_index + 1} of Input Image {loader.metadata['filename']}")
+        plt.colorbar()
+        plt.show()

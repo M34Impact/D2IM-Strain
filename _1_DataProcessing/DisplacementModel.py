@@ -8,7 +8,7 @@ class DisplacementModel:
         self.scan = scan
         self.bd_mask = bd_mask
         self.be_mask = be_mask
-        self.predictions = self.__get_predictions()
+        # self.predictions = self.__get_predictions()
         self.standardized_pezz = self.__get_standardized_pezz()
 
     def __get_predictions(self):
@@ -17,19 +17,19 @@ class DisplacementModel:
         return predictions
 
     # Unused function
-    def get_predicted_W(self):
+    def get_predicted_w(self):
         plot_num = self.scan.shape[0]
 
-        predicted_W = []
+        predicted_w = []
         for i in range(plot_num):  # Loop through each sample
             resized_img = self.predictions[2][i].reshape((20, 20))
-            predicted_W.append(resized_img)
+            predicted_w.append(resized_img)
 
-        predicted_W = np.array(predicted_W)
-        return predicted_W
+        predicted_w = np.array(predicted_w)
+        return predicted_w
 
     def __calculate_strain(self, displacement_w, dx):
-        dw_dz = np.gradient(displacement_w, dx, axis=(0))
+        dw_dz = np.gradient(displacement_w, dx, axis=0)
         ezz = dw_dz * 1e6
         # ezz = dw_dz
         return ezz
