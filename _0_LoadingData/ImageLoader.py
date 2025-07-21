@@ -1,5 +1,6 @@
 import os
 from PIL import Image, ImageEnhance
+import numpy as np
 
 # Single File
 class ImageLoader:
@@ -15,7 +16,10 @@ class ImageLoader:
             if not os.path.exists(self.file_path):
                 raise FileNotFoundError(f"Image file not found: {self.file_path}")
 
-            self.image = Image.open(self.file_path)
+            img = Image.open(self.file_path)
+            img_array = np.array(img).astype(float)
+            img_array[np.isnan(img_array)] = 0
+            self.image = Image.fromarray(img_array.astype(np.int8))
             self.original_image = self.image.copy()
 
             # Store metadata

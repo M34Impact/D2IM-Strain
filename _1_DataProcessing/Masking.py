@@ -14,8 +14,8 @@ class Masking:
     def get_binary_erosion_mask(self):
         return self.be_mask
 
-    def visualise(self, example_index: int):
+    def visualise(self, example_index: int, filenames):
         plt.imshow(self.bd_mask[example_index], cmap='gray')
-        plt.title(f"Example {example_index + 1} of Mask Image")
+        plt.title(f"Example {example_index + 1} of Mask Image {filenames[example_index]}")
         plt.colorbar()
         plt.show()

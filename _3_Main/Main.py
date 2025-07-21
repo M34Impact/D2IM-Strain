@@ -11,18 +11,20 @@ if __name__ == "__main__":
     allLoaders = resizer.get_resized_loaders()
 
     # Plot sample input scan
-    resizer.visualise(example_index=3)
+    resizer.visualise(example_index=69)
 
     # Plot sample mask
     mask_array = [image_loader.image for image_loader in allLoaders[1].images]
     mask_obj = Masking(mask_array)
-    mask_obj.visualise(example_index=3)
+    mask_filename_array = [image_loader.metadata['filename'] for image_loader in allLoaders[1].images]
+    mask_obj.visualise(example_index=69, filenames=mask_filename_array)
 
     # Strain Calculation and Visualisation
     input_w_array = [image_loader.image for image_loader in allLoaders[2].images]
     be_mask = mask_obj.get_binary_erosion_mask()
     strain_obj = Strain(be_mask, input_w_array)
-    strain_obj.visualise(example_index=3)
+    strain_filename_array = [image_loader.metadata['filename'] for image_loader in allLoaders[2].images]
+    strain_obj.visualise(example_index=69, filenames=strain_filename_array)
 
     # Strain Calculation from Original D2IM Model -- Not developing for now
     # scan_array = [image_loader.image for image_loader in allLoaders[0].images]

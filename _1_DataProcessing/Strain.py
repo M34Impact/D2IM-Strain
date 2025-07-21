@@ -32,11 +32,6 @@ class Strain:
         global_std = np.std(target_ezz)
         standardized_ezz = np.where(self.be_mask, (target_ezz - global_mean) / global_std, 0.0)
 
-        for arr in target_ezz[3]:
-            for val in arr:
-                print("Value:", val)
-
-
         # Log Normalisation
         # log_normalized_ezz = np.where(self.be_mask, np.log(target_ezz), 0.0)
         # # Normalise to [0, 1] if you want
@@ -47,8 +42,8 @@ class Strain:
 
         return target_ezz
 
-    def visualise(self, example_index):
+    def visualise(self, example_index, filenames):
         plt.imshow(self.standardized_ezz[example_index], cmap='coolwarm')
-        plt.title(f"Example {example_index + 1} of Strain Image")
+        plt.title(f"Example {example_index + 1} of Strain Image {filenames[example_index]}")
         plt.colorbar()
         plt.show()

@@ -8,7 +8,7 @@ class DisplacementModel:
         self.scan = scan
         self.bd_mask = bd_mask
         self.be_mask = be_mask
-        # self.predictions = self.__get_predictions()
+        self.predictions = self.__get_predictions()
         self.standardized_pezz = self.__get_standardized_pezz()
 
     def __get_predictions(self):
@@ -61,6 +61,6 @@ class DisplacementModel:
 
     def visualise(self, example_index):
         plt.imshow(self.standardized_pezz[example_index], cmap='coolwarm')
-        plt.title(f"Example {example_index + 1} of w Image")
+        plt.title(f"Example {example_index + 1} of ezz strain from Displacement")
         plt.colorbar()
         plt.show()
