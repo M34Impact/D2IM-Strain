@@ -9,7 +9,7 @@ class Strain:
         self.standardized_ezz = self.__get_standardized_ezz()
 
     def __calculate_strain(self, displacement_w, dx):
-        dw_dz = np.gradient(displacement_w, dx, axis=(0))
+        dw_dz = np.gradient(displacement_w, dx, axis=0)
         ezz = dw_dz * 1e6
         # ezz = dw_dz
         return ezz
@@ -45,5 +45,11 @@ class Strain:
     def visualise(self, example_index, filenames):
         plt.imshow(self.standardized_ezz[example_index], cmap='coolwarm')
         plt.title(f"Example {example_index + 1} of Strain Image {filenames[example_index]}")
+        plt.colorbar()
+        plt.show()
+
+    def visualiseW(self, example_index, filenames):
+        plt.imshow(self.w_input_images[example_index], cmap='coolwarm')
+        plt.title(f"Example {example_index + 1} of W Image {filenames[example_index]}")
         plt.colorbar()
         plt.show()

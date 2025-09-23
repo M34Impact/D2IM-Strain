@@ -1,10 +1,15 @@
 import os
 from PIL import Image, ImageEnhance
 import numpy as np
+import tiffile as tiff
+from numpy.conftest import dtype
+from scipy.ndimage import zoom
 
 # Single File
 class ImageLoader:
     def __init__(self, file_path: str):
+        self.img = None
+        self.img_array = None
         self.file_path = file_path
         self.image = None
         self.original_image = None
@@ -16,10 +21,10 @@ class ImageLoader:
             if not os.path.exists(self.file_path):
                 raise FileNotFoundError(f"Image file not found: {self.file_path}")
 
-            img = Image.open(self.file_path)
-            img_array = np.array(img).astype(float)
-            img_array[np.isnan(img_array)] = 0
-            self.image = Image.fromarray(img_array.astype(np.int8))
+            self.img = tiff.imread(self.file_path)
+            self.img[np.isnan(self.img)] = 0
+            self.image = Image.fromarray(self.img)
+
             self.original_image = self.image.copy()
 
             # Store metadata
@@ -50,11 +55,10 @@ class ImageLoader:
             return False
 
         try:
-            if maintain_aspect:
-                self.image.thumbnail((width, height), Image.Resampling.LANCZOS)
+            if maintain_aspect: # Not called
+                self.image.thumbnail((width, height), Image.Resampling.NEAREST)
             else:
-                self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
-
+                self.image = zoom(self.img, (width/self.img.shape[0], height/self.img.shape[1]), mode='nearest', order=0)
             self.metadata['size'] = self.image.size
             self.metadata['width'] = self.image.width
             self.metadata['height'] = self.image.height

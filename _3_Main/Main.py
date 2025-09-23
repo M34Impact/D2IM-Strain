@@ -26,6 +26,9 @@ if __name__ == "__main__":
     be_mask = mask_obj.get_binary_erosion_mask()
     strain_obj = Strain(be_mask, input_w_array)
     strain_filename_array = [image_loader.metadata['filename'] for image_loader in allLoaders[2].images]
+
+
+    strain_obj.visualiseW(example_index=69, filenames=strain_filename_array)
     strain_obj.visualise(example_index=69, filenames=strain_filename_array)
 
     # Strain Calculation from Original D2IM Model -- Not used
