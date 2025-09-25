@@ -48,9 +48,9 @@ if __name__ == "__main__":
 
     # Data Splitting - Scans
     scan_array = [image_loader.image for image_loader in allLoaders[0].images]
-    # scan_np_array = np.array(scan_array)
-    # scan_split = DataSplit(scan_np_array)
-    scan_split = DataSplit(scan_array)
+    scan_np_array = np.array(scan_array)
+    scan_np_array = scan_np_array/255   #To keep values between 0-1
+    scan_split = DataSplit(scan_np_array)
     scan_train, scan_val, scan_test = scan_split.split_data()
 
     # Data Splitting - Masks

@@ -83,8 +83,10 @@ class ScanModel:
         while True:
             for start_idx in range(0, num_samples, batch_size):
                 end_idx = start_idx + batch_size
-                yield ([input_data1[start_idx:end_idx], input_data2[start_idx:end_idx]],
-                           [target_data_1[start_idx:end_idx]])
+                yield (
+                    (input_data1[start_idx:end_idx], input_data2[start_idx:end_idx]),
+                           target_data_1[start_idx:end_idx]
+                )
 
     def train(self):
         # Define input shapes and output shape
