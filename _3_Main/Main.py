@@ -1,3 +1,5 @@
+from pasta.base.scope import analyze
+
 from _0_LoadingData.FolderImageLoader import FolderImageLoader
 from _0_LoadingData.ImageResizer import ImageResizer
 from _1_DataProcessing.DisplacementModel import DisplacementModel
@@ -6,6 +8,7 @@ from _1_DataProcessing.Strain import Strain
 from _2_Training.DataSpilt import DataSplit
 from _2_Training.ScanModel import ScanModel
 import numpy as np
+from _2_Training.TrainingAnalysis import TrainingAnalysis
 
 if __name__ == "__main__":
     # Resize
@@ -32,13 +35,13 @@ if __name__ == "__main__":
     strain_obj.visualise(example_index=69, filenames=strain_filename_array)
 
     # Strain Calculation from Original D2IM Model -- Not used
-    # scan_array = [image_loader.image for image_loader in allLoaders[0].images]
-    # bd_mask = mask_obj.get_binary_dilation_mask()
-    # dp_model = DisplacementModel(scan_array, bd_mask, be_mask)
-    # dp_model.visualise(example_index=69)
-    # Data Splitting - Predicted Strains
-    # pezz_split = DataSplit(dp_model.standardized_pezz)
-    # pezz_train, pezz_val, pezz_test = pezz_split.split_data()
+    scan_array = [image_loader.image for image_loader in allLoaders[0].images]
+    bd_mask = mask_obj.get_binary_dilation_mask()
+    dp_model = DisplacementModel(scan_array, bd_mask, be_mask)
+    dp_model.visualise(example_index=69)
+    # Data Splitting - Predicted Strains from displacement
+    pezz_split = DataSplit(dp_model.standardized_pezz)
+    pezz_train, pezz_val, pezz_test = pezz_split.split_data()
 
     # Data Splitting - Strain
     # strain_np_array = np.array(strain_obj.standardized_ezz)
@@ -59,6 +62,16 @@ if __name__ == "__main__":
     mask_split = DataSplit(be_mask)
     mask_train, mask_val, mask_test = mask_split.split_data()
 
-    # Training CNN
-    scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
-    scan_model.train()
+    # Training CNN - commented loading from stored
+    # scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
+    # scan_model.train()
+
+    # Post Training Analysis
+    analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
+                                mask_train, mask_val, mask_test,
+                                strain_train, strain_val, scan_test,
+                                pezz_train, pezz_val, pezz_test,
+                                dp_model.predictions, dp_model.global_mean, dp_model.global_std)
+    analysis.calculate_loss()
+    analysis.visualiseCorrelation()
+    analysis.visualise()
