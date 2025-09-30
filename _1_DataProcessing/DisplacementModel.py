@@ -12,7 +12,9 @@ class DisplacementModel:
         self.standardized_pezz = self.__get_standardized_pezz()
 
     def __get_predictions(self):
-        displacement_model = tf.keras.models.load_model('D2IM_trained.h5')
+        path = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_3_Main\D2IM_trained.h5"
+        displacement_model = tf.keras.models.load_model(path)
+        displacement_model.summary()
         predictions = displacement_model.predict([self.scan, self.bd_mask])
         return predictions
 

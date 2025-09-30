@@ -34,10 +34,12 @@ if __name__ == "__main__":
     strain_obj.visualiseW(example_index=69, filenames=strain_filename_array)
     strain_obj.visualise(example_index=69, filenames=strain_filename_array)
 
-    # Strain Calculation from Original D2IM Model -- Not used
+    # Strain Calculation from Original D2IM Model -- For comparison
     scan_array = [image_loader.image for image_loader in allLoaders[0].images]
+    scan_np_array = np.array(scan_array)
+    scan_np_array = scan_np_array / 255  # To keep values between 0-1
     bd_mask = mask_obj.get_binary_dilation_mask()
-    dp_model = DisplacementModel(scan_array, bd_mask, be_mask)
+    dp_model = DisplacementModel(scan_np_array, bd_mask, be_mask)
     dp_model.visualise(example_index=69)
     # Data Splitting - Predicted Strains from displacement
     pezz_split = DataSplit(dp_model.standardized_pezz)
@@ -50,9 +52,6 @@ if __name__ == "__main__":
     strain_train, strain_val, strain_test = strain_split.split_data()
 
     # Data Splitting - Scans
-    scan_array = [image_loader.image for image_loader in allLoaders[0].images]
-    scan_np_array = np.array(scan_array)
-    scan_np_array = scan_np_array/255   #To keep values between 0-1
     scan_split = DataSplit(scan_np_array)
     scan_train, scan_val, scan_test = scan_split.split_data()
 
@@ -62,7 +61,7 @@ if __name__ == "__main__":
     mask_split = DataSplit(be_mask)
     mask_train, mask_val, mask_test = mask_split.split_data()
 
-    # Training CNN - commented loading from stored
+    # Training CNN - commented, loading from stored
     # scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
     # scan_model.train()
 
