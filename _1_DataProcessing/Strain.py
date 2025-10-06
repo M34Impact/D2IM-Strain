@@ -28,9 +28,10 @@ class Strain:
         target_ezz = np.where(self.be_mask, target_ezz, 0.0)
 
         # Standardisation
-        global_mean = np.mean(target_ezz)
-        global_std = np.std(target_ezz)
-        standardized_ezz = np.where(self.be_mask, (target_ezz - global_mean) / global_std, 0.0)
+        # TODO: - Change here for improvement
+        self.global_mean = np.mean(target_ezz)
+        self.global_std = np.std(target_ezz)
+        standardized_ezz = np.where(self.be_mask, (target_ezz - self.global_mean) / self.global_std, 0.0)
 
         # Log Normalisation
         # log_normalized_ezz = np.where(self.be_mask, np.log(target_ezz), 0.0)

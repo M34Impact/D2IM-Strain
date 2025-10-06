@@ -54,9 +54,9 @@ class DisplacementModel:
         target_ezz = np.where(self.be_mask, predicted_ezz, 0.0)
 
         # TODO: - Change here for improvement
-        self.global_mean = np.mean(predicted_ezz)
-        self.global_std = np.std(predicted_ezz)
-        standardized_pezz = np.where(self.be_mask, (predicted_ezz - self.global_mean) / self.global_std, 0.0)
+        global_mean = np.mean(predicted_ezz)
+        global_std = np.std(predicted_ezz)
+        standardized_pezz = np.where(self.be_mask, (predicted_ezz - global_mean) / global_std, 0.0)
 
         return standardized_pezz
 

@@ -44,8 +44,8 @@ if __name__ == "__main__":
     dp_model.visualise(example_index=69)
 
     # Data Splitting - Predicted Strains from displacement
-    pezz_split = DataSplit(dp_model.standardized_pezz)
-    pezz_train, pezz_val, pezz_test = pezz_split.split_data()
+    strain_pred_split = DataSplit(dp_model.standardized_pezz)
+    strain_pred_train, strain_pred_val, strain_pred_test = strain_pred_split.split_data()
 
     # Data Splitting - Strain
     # strain_np_array = np.array(strain_obj.standardized_ezz)
@@ -71,8 +71,8 @@ if __name__ == "__main__":
     analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
                                 mask_train, mask_val, mask_test,
                                 strain_train, strain_val, strain_test,
-                                pezz_train, pezz_val, pezz_test,
-                                dp_model.global_mean, dp_model.global_std)
+                                strain_pred_train, strain_pred_val, strain_pred_test,
+                                strain_obj.global_mean, strain_obj.global_std)
     analysis.calculate_loss()
     analysis.visualiseCorrelation()
     analysis.visualise()

@@ -13,7 +13,7 @@ class TrainingAnalysis:
     def __init__(self, scan_train, scan_val, scan_test,
                  mask_train, mask_val, mask_test,
                  strain_train, strain_val, strain_test,
-                 pezz_train, pezz_val, pezz_test,
+                 strain_pred_train, strain_pred_val, strain_pred_test,
                  global_mean, global_std) -> None:
         self.scan_train = scan_train
         self.scan_val = scan_val
@@ -24,9 +24,9 @@ class TrainingAnalysis:
         self.strain_train = strain_train
         self.strain_val = strain_val
         self.strain_test = strain_test
-        self.pezz_train = pezz_train
-        self.pezz_val = pezz_val
-        self.pezz_test = pezz_test
+        self.pezz_train = strain_pred_train
+        self.pezz_val = strain_pred_val
+        self.pezz_test = strain_pred_test
         self.input_data_test1 = None
         self.predictions = None
         self.global_mean = global_mean
