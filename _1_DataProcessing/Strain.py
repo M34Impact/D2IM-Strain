@@ -41,7 +41,7 @@ class Strain:
         # log_max = np.max(log_vals[self.be_mask])
         # log_normalized_scaled = np.where(self.be_mask, (log_vals - log_min) / (log_vals - log_max), 0.0)
 
-        return target_ezz
+        return standardized_ezz
 
     def visualise(self, example_index, filenames):
         plt.imshow(self.standardized_ezz[example_index], cmap='coolwarm')
