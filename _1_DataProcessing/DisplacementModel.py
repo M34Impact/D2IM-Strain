@@ -14,7 +14,7 @@ class DisplacementModel:
     def __get_predictions(self):
         path = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_3_Main\D2IM_trained.h5"
         displacement_model = tf.keras.models.load_model(path)
-        displacement_model.summary()
+        # displacement_model.summary()
         predictions = displacement_model.predict([self.scan, self.bd_mask])
         return predictions
 

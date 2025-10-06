@@ -8,13 +8,13 @@ import numpy as np
 import tiffile as tiff
 from sklearn.model_selection import train_test_split
 
-
+# Coloured correlation analysis between predicted and observed values
 class TrainingAnalysis:
     def __init__(self, scan_train, scan_val, scan_test,
                  mask_train, mask_val, mask_test,
                  strain_train, strain_val, strain_test,
                  pezz_train, pezz_val, pezz_test,
-                 predictions, global_mean, global_std) -> None:
+                 global_mean, global_std) -> None:
         self.scan_train = scan_train
         self.scan_val = scan_val
         self.scan_test = scan_test
@@ -28,15 +28,14 @@ class TrainingAnalysis:
         self.pezz_val = pezz_val
         self.pezz_test = pezz_test
         self.input_data_test1 = None
-        self.predictions = predictions
+        self.predictions = None
         self.global_mean = global_mean
         self.global_std = global_std
 
     def calculate_loss(self):
-        # Load model
         path = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_3_Main\M1_best.h5"
         model = tf.keras.models.load_model(path)
-        model.summary()
+        # model.summary()
 
         num_channels = 1
         input_data1 = self.scan_train.reshape(self.scan_train.shape[0], self.scan_train.shape[1],
@@ -69,7 +68,7 @@ class TrainingAnalysis:
         print("test loss, test acc:", results)
 
         # Make predictions using test data
-        predictions = model.predict([self.input_data_test1, input_data_test2])
+        self.predictions = model.predict([self.input_data_test1, input_data_test2])
 
 
     # Create a coloured correlation analysis between predicted and observed values
@@ -177,7 +176,7 @@ class TrainingAnalysis:
         predicted_data_D2IM = self.pezz_test * vs
         predicted_data_D2IM_str = (self.predictions + self.global_mean) * self.global_std * vs
         predicted_data_D2IM_str = (self.predictions) * vs
-        target_data_ezz = self.scan_test * vs
+        target_data_ezz = self.strain_test * vs
 
         # Create a figure with three subplots
         fig, axs = plt.subplots(1, 2, figsize=(20, 10))
@@ -225,7 +224,7 @@ class TrainingAnalysis:
             output_shape = (self.strain_train.shape[1], self.strain_train.shape[2])
 
             predicted_image = (np.flipud(self.predictions[i].reshape(output_shape)))
-            target_image = np.flipud(self.scan_test[i])
+            target_image = np.flipud(self.strain_test[i])
             D2IM_strn = np.flipud(self.pezz_test[i])
             max_strerr_bar = np.max(np.abs(target_image - predicted_image))
             # min_d=np.array([target_image.min(),predicted_image.min()]).min()

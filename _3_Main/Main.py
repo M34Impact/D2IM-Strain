@@ -39,8 +39,10 @@ if __name__ == "__main__":
     scan_np_array = np.array(scan_array)
     scan_np_array = scan_np_array / 255  # To keep values between 0-1
     bd_mask = mask_obj.get_binary_dilation_mask()
+
     dp_model = DisplacementModel(scan_np_array, bd_mask, be_mask)
     dp_model.visualise(example_index=69)
+
     # Data Splitting - Predicted Strains from displacement
     pezz_split = DataSplit(dp_model.standardized_pezz)
     pezz_train, pezz_val, pezz_test = pezz_split.split_data()
@@ -68,9 +70,9 @@ if __name__ == "__main__":
     # Post Training Analysis
     analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
                                 mask_train, mask_val, mask_test,
-                                strain_train, strain_val, scan_test,
+                                strain_train, strain_val, strain_test,
                                 pezz_train, pezz_val, pezz_test,
-                                dp_model.predictions, dp_model.global_mean, dp_model.global_std)
+                                dp_model.global_mean, dp_model.global_std)
     analysis.calculate_loss()
     analysis.visualiseCorrelation()
     analysis.visualise()
