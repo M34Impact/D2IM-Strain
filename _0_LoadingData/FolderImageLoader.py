@@ -1,9 +1,8 @@
 import os
 import glob
 from typing import Optional, Tuple, List, Union, Dict
-
 from _0_LoadingData.ImageLoader import ImageLoader
-import matplotlib.pyplot as plt
+from natsort import natsorted
 
 
 class FolderImageLoader:
@@ -51,6 +50,8 @@ class FolderImageLoader:
             pattern = os.path.join(self.folder_path, f'*{ext}')
             image_files.extend(glob.glob(pattern))
 
+        # Sort files
+        # image_files = natsorted(image_files)
         return image_files
 
     def get_images(self) -> List[ImageLoader]:

@@ -26,18 +26,6 @@ class ImageResizer:
                     resized_count = self.allLoaders[i].resize_all(20, 20, maintain_aspect=False)
                 print(f"Resized {resized_count} images (maintaining aspect ratio)")
 
-        # Print resized images
-        # for loader in self.allLoaders:
-        #     print(loader.print_details())
-
-        # Sort by filename
-        def natural_key(item):
-            filename = item.metadata['filename']
-            return [int(text) if text.isdigit() else text.lower()
-                    for text in re.split(r'(\d+)', filename)]
-        for loader in self.allLoaders:
-            loader.images.sort(key=natural_key)
-
         return self.allLoaders
 
     def visualise(self, example_index):
