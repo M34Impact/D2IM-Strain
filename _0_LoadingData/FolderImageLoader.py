@@ -7,9 +7,8 @@ import matplotlib.pyplot as plt
 
 
 class FolderImageLoader:
-    def __init__(self, folder_path: str, recursive: bool = False):
+    def __init__(self, folder_path: str):
         self.folder_path = folder_path
-        self.recursive = recursive
         self.images = []
         self.failed_files = []
         self.supported_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.gif', '.webp'}
@@ -48,25 +47,10 @@ class FolderImageLoader:
     def _get_image_files(self) -> List[str]:
         image_files = []
 
-        if self.recursive:
-            # Search recursively
-            for ext in self.supported_extensions:
-                pattern = os.path.join(self.folder_path, '**', f'*{ext}')
-                image_files.extend(glob.glob(pattern, recursive=True))
-                # Also search for uppercase extensions
-                pattern = os.path.join(self.folder_path, '**', f'*{ext.upper()}')
-                image_files.extend(glob.glob(pattern, recursive=True))
-        else:
-            # Search only in the main folder
-            for ext in self.supported_extensions:
-                pattern = os.path.join(self.folder_path, f'*{ext}')
-                image_files.extend(glob.glob(pattern))
-                # Also search for uppercase extensions
-                pattern = os.path.join(self.folder_path, f'*{ext.upper()}')
-                image_files.extend(glob.glob(pattern))
+        for ext in self.supported_extensions:
+            pattern = os.path.join(self.folder_path, f'*{ext}')
+            image_files.extend(glob.glob(pattern))
 
-        # Remove duplicates and sort
-        image_files = sorted(list(set(image_files)))
         return image_files
 
     def get_images(self) -> List[ImageLoader]:
@@ -96,8 +80,7 @@ class FolderImageLoader:
             "formats": formats,
             "total_file_size_mb": round(total_size / (1024 * 1024), 2),
             "total_pixels": total_pixels,
-            "folder_path": self.folder_path,
-            "recursive_search": self.recursive
+            "folder_path": self.folder_path
         }
 
     def filter_by_size(self, min_width: int = 0, min_height: int = 0,

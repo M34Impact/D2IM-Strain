@@ -12,7 +12,7 @@ class ImageResizer:
     def get_resized_loaders(self):
         # Load all images
         for folderPath in self.folderPaths:
-            loader = FolderImageLoader(folderPath, recursive=False)
+            loader = FolderImageLoader(folderPath)
             summary = loader.get_summary()
             print(f"\nSummary: {summary}")
             self.allLoaders.append(loader)
