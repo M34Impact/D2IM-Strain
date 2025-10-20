@@ -1,5 +1,3 @@
-from pasta.base.scope import analyze
-
 from _0_LoadingData.FolderImageLoader import FolderImageLoader
 from _0_LoadingData.ImageResizer import ImageResizer
 from _1_DataProcessing.DisplacementModel import DisplacementModel
@@ -64,8 +62,8 @@ if __name__ == "__main__":
     mask_train, mask_val, mask_test = mask_split.split_data()
 
     # Training CNN - commented, loading from stored
-    # scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
-    # scan_model.train()
+    scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
+    scan_model.train()
 
     # Post Training Analysis
     analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
