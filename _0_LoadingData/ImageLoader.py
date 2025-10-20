@@ -2,7 +2,6 @@ import os
 from PIL import Image, ImageEnhance
 import numpy as np
 import tiffile as tiff
-from numpy.conftest import dtype
 from scipy.ndimage import zoom
 
 # Single File

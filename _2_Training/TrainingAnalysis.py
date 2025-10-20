@@ -8,6 +8,9 @@ import numpy as np
 import tiffile as tiff
 from sklearn.model_selection import train_test_split
 
+from _2_Training.DataSpilt import DataSplit
+
+
 # Coloured correlation analysis between predicted and observed values
 class TrainingAnalysis:
     def __init__(self, scan_train, scan_val, scan_test,
@@ -102,7 +105,8 @@ class TrainingAnalysis:
         ident_only = [data[1] for data in bone_data[0]]
 
         RS = 3623
-        ident_NT, ident_test = train_test_split(ident_only, test_size=0.1, random_state=RS, shuffle=True)
+        data_split = DataSplit(ident_only)
+        ident_train, ident_val, ident_test = data_split.split_data()
         ident_test = np.array(ident_test)
 
         # Define the mappings
@@ -123,10 +127,11 @@ class TrainingAnalysis:
         # Create a new variable with the updated strings based on the mappings
         new_ident_test = np.vectorize(mapping.get)(ident_test)
 
-        ident_test_3d = new_ident_test.reshape((26, 1, 1))  # Reshape to 26x1x1
+        num_test_samples = self.predictions.shape[0]
+        ident_test_3d = new_ident_test.reshape((num_test_samples, 1, 1))  # Reshape to 26x1x1
 
         # Now, use broadcasting to repeat the values along the other dimensions
-        ident_test_3d = np.broadcast_to(ident_test_3d, (26, 20, 20))
+        ident_test_3d = np.broadcast_to(ident_test_3d, (num_test_samples, 20, 20))
 
         # Create a function to calculate correlation and plot the data with color-coded points
         def plot_correlation_with_colors(predicted_data, target_data, labels, title, title2):
@@ -299,12 +304,16 @@ class TrainingAnalysis:
             cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
             ax2.axis('off')
 
-            error = np.abs((target_image - predicted_image) / (target_image)) * 100
-            error = np.nan_to_num(error, posinf=0, neginf=0)
-
+            error2D = np.abs((target_image - predicted_image) / (target_image)) * 100
+            error2D = np.nan_to_num(error2D, posinf=0, neginf=0)
+            errValue = 0
+            for error1D in error2D:
+                for e in error1D:
+                    errValue += e
+            print("errValue:", errValue)
             # Plot the displacement error
             ax3 = plt.subplot(gs[0, 4])  # First subplot
-            im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
+            im3 = ax3.imshow(error2D, cmap='jet', vmin=0, vmax=100)
             ax3.set_title("Strain Error (με): |ε$_{zz}-ε_{zz}$|")
 
             divider = make_axes_locatable(ax3)

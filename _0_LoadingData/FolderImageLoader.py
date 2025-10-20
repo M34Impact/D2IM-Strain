@@ -51,7 +51,7 @@ class FolderImageLoader:
             image_files.extend(glob.glob(pattern))
 
         # Sort files
-        # image_files = natsorted(image_files)
+        image_files = natsorted(image_files)
         return image_files
 
     def get_images(self) -> List[ImageLoader]:
