@@ -4,6 +4,7 @@ from _1_DataProcessing.DisplacementModel import DisplacementModel
 from _1_DataProcessing.Masking import Masking
 from _1_DataProcessing.Strain import Strain
 from _2_Training.DataSpilt import DataSplit
+from _2_Training.ScanLosoModel import ScanLosoModel
 from _2_Training.ScanModel import ScanModel
 import numpy as np
 from _2_Training.TrainingAnalysis import TrainingAnalysis
@@ -61,16 +62,26 @@ if __name__ == "__main__":
     mask_split = DataSplit(be_mask)
     mask_train, mask_val, mask_test = mask_split.split_data()
 
-    # Training CNN - commented, loading from stored
-    scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
-    scan_model.train()
+    # Train Scan only model
+    # scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
+    # scan_model.train()
+
+    # Train LOSO Model
+    model_loso = ScanLosoModel(scan_np_array, be_mask, strain_obj.standardized_ezz)
+    results = model_loso.train_loso()
 
     # Post Training Analysis
-    analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
-                                mask_train, mask_val, mask_test,
-                                strain_train, strain_val, strain_test,
-                                strain_pred_train, strain_pred_val, strain_pred_test,
-                                strain_obj.global_mean, strain_obj.global_std)
-    analysis.calculate_loss()
-    analysis.visualiseCorrelation()
-    analysis.visualise()
+    # analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
+    #                             mask_train, mask_val, mask_test,
+    #                             strain_train, strain_val, strain_test,
+    #                             strain_pred_train, strain_pred_val, strain_pred_test,
+    #                             strain_obj.global_mean, strain_obj.global_std)
+    # analysis.calculate_loss()
+    # analysis.visualiseCorrelation()
+
+    # scan_filename_array = [image_loader.metadata['filename'] for image_loader in allLoaders[0].images]
+    # scan_filename_test = scan_filename_array[len(scan_filename_array) - 50:]
+    # analysis.visualise(scan_filename_test)
+
+    # analysis.visualise()
+
