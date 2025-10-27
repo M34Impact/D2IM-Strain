@@ -50,8 +50,6 @@ class FolderImageLoader:
             pattern = os.path.join(self.folder_path, f'*{ext}')
             image_files.extend(glob.glob(pattern))
 
-        # Sort files
-        image_files = natsorted(image_files)
         return image_files
 
     def get_images(self) -> List[ImageLoader]:
