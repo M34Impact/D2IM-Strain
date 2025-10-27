@@ -58,7 +58,6 @@ class TrainingAnalysis:
         print("val loss, val acc:", results)
 
         # Get test data into correct shape
-        # TODO: - Redefine input_test_1 and similarly for others
         self.input_data_test1 = self.scan_test.reshape(self.scan_test.shape[0], self.scan_test.shape[1],
                                                   self.scan_test.shape[2], num_channels)
         input_data_test2 = self.mask_test.reshape(self.mask_test.shape[0], self.mask_test.shape[1],
@@ -104,7 +103,6 @@ class TrainingAnalysis:
 
         ident_only = [data[1] for data in bone_data[0]]
 
-        RS = 3623
         data_split = DataSplit(ident_only)
         ident_train, ident_val, ident_test = data_split.split_data()
         ident_test = np.array(ident_test)
@@ -220,8 +218,8 @@ class TrainingAnalysis:
         vs = 39  # real voxel size um
         ns = 50  # Node spacing
 
-        for i in plot_num:  # Loop through each sample
-            print("plot ", i)
+        for i in plot_num:  # Loop through each test sample
+            # print(f"plot {i+1} of scan {scan_test_filenames[i]}")
             plt.figure(figsize=(25, 5))  # Adjust the figure size to accommodate three plots
 
             input_shape1 = (self.scan_train.shape[1], self.scan_train.shape[2], 1)
@@ -306,11 +304,13 @@ class TrainingAnalysis:
 
             error2D = np.abs((target_image - predicted_image) / (target_image)) * 100
             error2D = np.nan_to_num(error2D, posinf=0, neginf=0)
+
             errValue = 0
             for error1D in error2D:
                 for e in error1D:
                     errValue += e
             print("errValue:", errValue)
+
             # Plot the displacement error
             ax3 = plt.subplot(gs[0, 4])  # First subplot
             im3 = ax3.imshow(error2D, cmap='jet', vmin=0, vmax=100)

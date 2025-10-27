@@ -8,8 +8,8 @@ class DataSplit:
         data = self.data
         total_len = len(data)
 
-        test_size = 50
-        val_size = 52
+        test_size = 50  #S9-S10
+        val_size = 52   #S7-S8
 
         train = data[: total_len - val_size - test_size]
         val = data[total_len - val_size - test_size : total_len - test_size]
