@@ -69,8 +69,7 @@ if __name__ == "__main__":
     analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
                                 mask_train, mask_val, mask_test,
                                 strain_train, strain_val, strain_test,
-                                strain_pred_train, strain_pred_val, strain_pred_test,
-                                strain_obj.global_mean, strain_obj.global_std)
+                                strain_pred_train, strain_pred_val, strain_pred_test)
     analysis.calculate_loss()
     analysis.visualiseCorrelation()
     analysis.visualise()

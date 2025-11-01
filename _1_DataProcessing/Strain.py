@@ -27,19 +27,14 @@ class Strain:
         target_ezz = np.array(strain_data)
         target_ezz = np.where(self.be_mask, target_ezz, 0.0)
 
-        # Standardisation
-        # TODO: - Change here for improvement
-        self.global_mean = np.mean(target_ezz)
-        self.global_std = np.std(target_ezz)
-        standardized_ezz = np.where(self.be_mask, (target_ezz - self.global_mean) / self.global_std, 0.0)
+        # Log & Standardisation
+        eps = 1e-8 # So that we don't take log(0)
+        log_transformed = np.sign(target_ezz) * np.log(np.abs(target_ezz) + eps)
+        log_transformed = np.where(self.be_mask, log_transformed, 0.0)
 
-        # Log Normalisation
-        # log_normalized_ezz = np.where(self.be_mask, np.log(target_ezz), 0.0)
-        # # Normalise to [0, 1] if you want
-        # log_vals = log_normalized_ezz
-        # log_min = np.min(log_vals[self.be_mask])
-        # log_max = np.max(log_vals[self.be_mask])
-        # log_normalized_scaled = np.where(self.be_mask, (log_vals - log_min) / (log_vals - log_max), 0.0)
+        self.global_mean = np.mean(log_transformed[self.be_mask])
+        self.global_std = np.std(log_transformed[self.be_mask])
+        standardized_ezz = np.where(self.be_mask, (log_transformed - self.global_mean) / self.global_std, 0.0)
 
         return standardized_ezz
 
