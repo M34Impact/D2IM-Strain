@@ -205,6 +205,10 @@ class TrainingAnalysis:
         # plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
         plt.show()
 
+    # Reverse after log transformation
+    def signed_log_inverse(self, x, eps=1e-8):
+        return np.sign(x) * (np.exp(np.abs(x)) - eps)
+
     def visualise(self):
         # Detailed plots with strain 4 cases used in paper
         # NOTE: the plot numbers do not currently match due to differnt data importing behaviour in kaggle
@@ -224,6 +228,10 @@ class TrainingAnalysis:
 
             predicted_image = (np.flipud(self.predictions[i].reshape(output_shape)))
             target_image = np.flipud(self.strain_test[i])
+
+            predicted_image = self.signed_log_inverse(predicted_image)
+            target_image = self.signed_log_inverse(target_image)
+
             D2IM_strn = np.flipud(self.pezz_test[i])
             max_strerr_bar = np.max(np.abs(target_image - predicted_image))
             # min_d=np.array([target_image.min(),predicted_image.min()]).min()
@@ -298,14 +306,9 @@ class TrainingAnalysis:
             cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
             ax2.axis('off')
 
-            error2D = np.abs((target_image - predicted_image) / (target_image)) * 100
+            eps = 1e-8  #To avoid dividing by 0
+            error2D = np.abs((target_image - predicted_image) / (target_image + eps)) * 100
             error2D = np.nan_to_num(error2D, posinf=0, neginf=0)
-
-            errValue = 0
-            for error1D in error2D:
-                for e in error1D:
-                    errValue += e
-            print("errValue:", errValue)
 
             # Plot the displacement error
             ax3 = plt.subplot(gs[0, 4])  # First subplot

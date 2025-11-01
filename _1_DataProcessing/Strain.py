@@ -36,7 +36,7 @@ class Strain:
         self.global_std = np.std(log_transformed[self.be_mask])
         standardized_ezz = np.where(self.be_mask, (log_transformed - self.global_mean) / self.global_std, 0.0)
 
-        return standardized_ezz
+        return log_transformed
 
     def visualise(self, example_index, filenames):
         plt.imshow(self.standardized_ezz[example_index], cmap='coolwarm')

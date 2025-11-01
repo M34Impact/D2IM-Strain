@@ -64,7 +64,7 @@ class DisplacementModel:
         standardized_pezz = np.where(self.be_mask, (log_transformed - global_mean) / global_std, 0.0)
 
         # can return log_transformed
-        return standardized_pezz
+        return log_transformed
 
     def visualise(self, example_index):
         plt.imshow(self.standardized_pezz[example_index], cmap='coolwarm')
