@@ -3,6 +3,9 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import LearningRateScheduler
 from matplotlib import pyplot as plt
+from tensorflow.keras.losses import Huber
+import tensorflow as tf
+from tensorflow.keras import regularizers
 
 class ScanModel:
 
@@ -45,17 +48,17 @@ class ScanModel:
         x = Flatten()(x)
         x = Dropout(dropout_rate)(x)
         x = BatchNormalization()(x)
-        # x = Dense(512, activation='relu', kernel_regularizer=l2(l2_lambda))(x)
+        x = Dense(512, activation='relu', kernel_regularizer=regularizers.l2(l2_lambda))(x)
         x = Dense(512, activation='relu')(x)
         x = Dropout(dropout_rate)(x)
         x = BatchNormalization()(x)
-        # x = Dense(512, activation='relu', kernel_regularizer=l2(l2_lambda))(x)
-        x = Dense(512, activation='relu')(x)
+        x = Dense(512, activation='relu', kernel_regularizer=regularizers.l2(l2_lambda))(x)
+        # x = Dense(512, activation='relu')(x)
         x = Dropout(dropout_rate)(x)
 
         x = BatchNormalization()(x)
-        # x = Dense(512, activation='relu', kernel_regularizer=l2(l2_lambda))(x)
-        x = Dense(512, activation='relu')(x)
+        x = Dense(512, activation='relu', kernel_regularizer=regularizers.l2(l2_lambda))(x)
+        # x = Dense(512, activation='relu')(x)
         x = Dropout(dropout_rate)(x)
 
         x = Dense(output_shape[0] * output_shape[1], activation=None)(x)
@@ -93,13 +96,15 @@ class ScanModel:
 
         # Define regularisation and create the model
         dropout_rate = 0.5
-        l2_lambda = 0.00001
+        l2_lambda = 1e-5
         model = self.create_cnn(input_shape1, input_shape2, output_shape, dropout_rate, l2_lambda)
         model.summary()
 
         # Compile the model
-        model.compile(optimizer='adam', loss={'out_ezz': 'mean_squared_error'})
-        # model.compile(optimizer='adam', loss={'out_ezz': 'mean_absolute_error'})
+        # model.compile(optimizer='adam', loss={'out_ezz': 'mean_squared_error'})
+        model.compile(optimizer='adam', loss={'out_ezz': 'mean_absolute_error'})
+        # model.compile(optimizer='adam', loss={'out_ezz': Huber(delta=1.0)})
+        # model.compile(optimizer='adam', loss={'out_ezz': self.dynamic_masked_mae})
 
         # Reshape input and target data
         num_channels = 1
@@ -151,3 +156,10 @@ class ScanModel:
         plt.ylabel('Loss')
         plt.legend()
         plt.show()
+
+    # MAE over masked area only
+    # def dynamic_masked_mae(self, y_true, y_pred):
+    #     # mask = tf.cast(y_true != 0, tf.float32)
+    #     mask = tf.cast(tf.not_equal(y_true, 0.0), tf.float32)
+    #     diff = tf.abs(y_true - y_pred) * mask
+    #     return tf.reduce_sum(diff) / (tf.reduce_sum(mask) + 1e-8)

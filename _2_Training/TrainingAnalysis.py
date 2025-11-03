@@ -32,8 +32,18 @@ class TrainingAnalysis:
         self.input_data_test1 = None
         self.predictions = None
 
+    # def dynamic_masked_mae(self, y_true, y_pred):
+    #     # mask = tf.cast(y_true != 0, tf.float32)
+    #     mask = tf.cast(tf.not_equal(y_true, 0.0), tf.float32)
+    #     diff = tf.abs(y_true - y_pred) * mask
+    #     return tf.reduce_sum(diff) / (tf.reduce_sum(mask) + 1e-8)
+
     def calculate_loss(self):
         path = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_3_Main\M1_best.h5"
+        # model = tf.keras.models.load_model(
+        #     path,
+        #     custom_objects={'dynamic_masked_mae': self.dynamic_masked_mae}
+        # )
         model = tf.keras.models.load_model(path)
         # model.summary()
 
@@ -298,14 +308,9 @@ class TrainingAnalysis:
             cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
             ax2.axis('off')
 
-            error2D = np.abs((target_image - predicted_image) / (target_image)) * 100
+            eps = 1e-8
+            error2D = np.abs((target_image - predicted_image) / (target_image + eps)) * 100
             error2D = np.nan_to_num(error2D, posinf=0, neginf=0)
-
-            errValue = 0
-            for error1D in error2D:
-                for e in error1D:
-                    errValue += e
-            print("errValue:", errValue)
 
             # Plot the displacement error
             ax3 = plt.subplot(gs[0, 4])  # First subplot
