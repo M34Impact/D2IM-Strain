@@ -16,8 +16,7 @@ class TrainingAnalysis:
     def __init__(self, scan_train, scan_val, scan_test,
                  mask_train, mask_val, mask_test,
                  strain_train, strain_val, strain_test,
-                 strain_pred_train, strain_pred_val, strain_pred_test,
-                 global_mean, global_std) -> None:
+                 strain_pred_train, strain_pred_val, strain_pred_test) -> None:
         self.scan_train = scan_train
         self.scan_val = scan_val
         self.scan_test = scan_test
@@ -32,8 +31,6 @@ class TrainingAnalysis:
         self.pezz_test = strain_pred_test
         self.input_data_test1 = None
         self.predictions = None
-        self.global_mean = global_mean
-        self.global_std = global_std
 
     def calculate_loss(self):
         path = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_3_Main\M1_best.h5"
@@ -177,7 +174,6 @@ class TrainingAnalysis:
 
         # Extract the data
         predicted_data_D2IM = self.pezz_test * vs
-        predicted_data_D2IM_str = (self.predictions + self.global_mean) * self.global_std * vs
         predicted_data_D2IM_str = (self.predictions) * vs
         target_data_ezz = self.strain_test * vs
 

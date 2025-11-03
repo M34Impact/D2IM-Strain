@@ -67,15 +67,12 @@ class ScanModel:
         return model
 
     def lr_schedule(self, epoch, lr):
-        if epoch == 0:
-            lr = 0.001
-        if epoch == 200:
-            lr = 0.001
-        if epoch == 600:
-            lr = 0.0001
-        if epoch == 800:
-            lr = 0.00001
-        return lr
+        if epoch < 600:
+            return 0.001
+        elif epoch < 800:
+            return 0.0001
+        else:
+            return 0.00001
 
     # Create data generators
     def data_generator(self, input_data1, input_data2, target_data_1, batch_size):
