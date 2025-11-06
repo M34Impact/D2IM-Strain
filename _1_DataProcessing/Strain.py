@@ -29,6 +29,7 @@ class Strain:
 
         # Log & Standardisation
         eps = 1e-8 # So that we don't take log(0)
+        # np.sign(predicted_ezz) --> return array of [-1, 0, 1] based on sign to keep sign
         log_transformed = np.sign(target_ezz) * np.log(np.abs(target_ezz) + eps)
         log_transformed = np.where(self.be_mask, log_transformed, 0.0)
 

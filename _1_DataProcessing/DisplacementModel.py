@@ -52,19 +52,12 @@ class DisplacementModel:
         predicted_ezz = np.array(predicted_ezz)
         predicted_ezz = np.where(self.be_mask, predicted_ezz, 0.0)
 
-        # Log & Standardisation
-        eps = 1e-8 # So that we don't take log(0)
-        # np.sign(predicted_ezz) --> return array of [-1, 0, 1] based on sign to keep sign
-        log_transformed = np.sign(predicted_ezz) * np.log(np.abs(predicted_ezz) + eps)
-        # ternary operator where be_mask is bool
-        log_transformed = np.where(self.be_mask, log_transformed, 0.0)
+        # Standardisation
+        global_mean = np.mean(predicted_ezz[self.bd_mask])
+        global_std = np.std(predicted_ezz[self.bd_mask])
+        standardized_pezz = np.where(self.be_mask, (predicted_ezz - global_mean) / global_std, 0.0)
 
-        global_mean = np.mean(log_transformed[self.bd_mask])
-        global_std = np.std(log_transformed[self.bd_mask])
-        standardized_pezz = np.where(self.be_mask, (log_transformed - global_mean) / global_std, 0.0)
-
-        # can return log_transformed
-        return log_transformed
+        return standardized_pezz
 
     def visualise(self, example_index):
         plt.imshow(self.standardized_pezz[example_index], cmap='coolwarm')
