@@ -174,11 +174,10 @@ class TrainingAnalysis:
 
         # Extract the data
         predicted_data_D2IM = self.pezz_test * vs
-        # predicted_data_D2IM_str = self.signed_log_inverse(self.predictions) * vs
-        # target_data_ezz = self.signed_log_inverse(self.strain_test) * vs
-
-        predicted_data_D2IM_str = self.signed_log_inverse(self.predictions)
-        target_data_ezz = self.signed_log_inverse(self.strain_test)
+        predicted_data_D2IM_str = self.signed_log_inverse(self.predictions) * vs
+        target_data_ezz = self.signed_log_inverse(self.strain_test) * vs
+        # predicted_data_D2IM_str = self.signed_log_inverse(self.predictions)
+        # target_data_ezz = self.signed_log_inverse(self.strain_test)
 
         print("Without vs scaling:")
         print(f"Predicted range: {predicted_data_D2IM_str.min():.2f} to {predicted_data_D2IM_str.max():.2f}")
