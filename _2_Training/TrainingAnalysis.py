@@ -174,8 +174,16 @@ class TrainingAnalysis:
 
         # Extract the data
         predicted_data_D2IM = self.pezz_test * vs
-        predicted_data_D2IM_str = (self.predictions) * vs
-        target_data_ezz = self.strain_test * vs
+        # predicted_data_D2IM_str = self.signed_log_inverse(self.predictions) * vs
+        # target_data_ezz = self.signed_log_inverse(self.strain_test) * vs
+
+        predicted_data_D2IM_str = self.signed_log_inverse(self.predictions)
+        target_data_ezz = self.signed_log_inverse(self.strain_test)
+
+        print("Without vs scaling:")
+        print(f"Predicted range: {predicted_data_D2IM_str.min():.2f} to {predicted_data_D2IM_str.max():.2f}")
+        print(f"Target range: {target_data_ezz.min():.2f} to {target_data_ezz.max():.2f}")
+        print(f"pezz_test range: {self.pezz_test.min():.2f} to {self.pezz_test.max():.2f}")
 
         # Create a figure with three subplots
         fig, axs = plt.subplots(1, 2, figsize=(20, 10))
@@ -307,12 +315,12 @@ class TrainingAnalysis:
             ax2.axis('off')
 
             eps = 1e-8  #To avoid dividing by 0
-            error2D = np.abs((target_image - predicted_image) / (target_image + eps)) * 100
-            error2D = np.nan_to_num(error2D, posinf=0, neginf=0)
+            relative_error = np.abs((target_image - predicted_image) / (target_image + eps)) * 100
+            relative_error = np.nan_to_num(relative_error, posinf=0, neginf=0)
 
             # Plot the displacement error
             ax3 = plt.subplot(gs[0, 4])  # First subplot
-            im3 = ax3.imshow(error2D, cmap='jet', vmin=0, vmax=100)
+            im3 = ax3.imshow(relative_error, cmap='jet', vmin=0, vmax=100)
             ax3.set_title("Strain Error (με): |ε$_{zz}-ε_{zz}$|")
 
             divider = make_axes_locatable(ax3)

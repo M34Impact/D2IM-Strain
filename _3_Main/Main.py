@@ -72,4 +72,4 @@ if __name__ == "__main__":
                                 strain_pred_train, strain_pred_val, strain_pred_test)
     analysis.calculate_loss()
     analysis.visualiseCorrelation()
-    analysis.visualise()
+    # analysis.visualise()
