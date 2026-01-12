@@ -7,6 +7,8 @@ from scipy.stats import pearsonr
 import numpy as np
 import tiffile as tiff
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 from _2_Training.DataSpilt import DataSplit
 
@@ -16,7 +18,8 @@ class TrainingAnalysis:
     def __init__(self, scan_train, scan_val, scan_test,
                  mask_train, mask_val, mask_test,
                  strain_train, strain_val, strain_test,
-                 strain_pred_train, strain_pred_val, strain_pred_test) -> None:
+                 strain_pred_train, strain_pred_val, strain_pred_test,
+                 global_std, global_mean) -> None:
         self.scan_train = scan_train
         self.scan_val = scan_val
         self.scan_test = scan_test
@@ -31,6 +34,8 @@ class TrainingAnalysis:
         self.pezz_test = strain_pred_test
         self.input_data_test1 = None
         self.predictions = None
+        self.global_std = global_std
+        self.global_mean = global_mean
 
     # def dynamic_masked_mae(self, y_true, y_pred):
     #     # mask = tf.cast(y_true != 0, tf.float32)
@@ -81,7 +86,7 @@ class TrainingAnalysis:
 
 
     # Create a coloured correlation analysis between predicted and observed values
-    def visualiseCorrelation(self):
+    def visualise_correlation(self):
         # Reimport scan data to get mappings to label each image with the vertebra
         # Define directory paths
 
@@ -215,7 +220,47 @@ class TrainingAnalysis:
         # plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
         plt.show()
 
-    def visualise(self):
+    def visualise_confusion_matrix(self):
+        def create_confusion_matrix(predicted_data, target_data, threshold=10000, ax=None, title=""):
+            # Flatten the data if they are not already 1D arrays
+            predicted_data = predicted_data.reshape(-1)
+            target_data = target_data.reshape(-1)
+
+            # Classify as 1 if >= threshold, else 0
+            predicted_classes = (abs(predicted_data) >= threshold).astype(int)
+            target_classes = (abs(target_data) >= threshold).astype(int)
+
+            # Generate confusion matrix
+            cm = confusion_matrix(target_classes, predicted_classes)
+
+            # Plot the confusion matrix in the specified subplot
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", cbar=False,
+                        xticklabels=["Predicted <10000", "Predicted ≥10000"],
+                        yticklabels=["Actual <10000", "Actual ≥10000"], ax=ax)
+            ax.set_xlabel("Predicted Class")
+            ax.set_ylabel("Actual Class")
+            ax.set_title(title)
+
+        # Plot each confusion matrix with its own title
+        fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+
+        # I need this step!
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                       (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                   (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                     (self.predictions * self.global_std + self.global_mean), 0.0)
+
+        create_confusion_matrix(predicted_data_D2IM, target_data_ezz, ax=axs[0], title="Displacement Derived")
+        create_confusion_matrix(predictions_model, target_data_ezz, ax=axs[1], title="Directly")
+
+        plt.tight_layout()
+        output_file = r"/_4_Figure/confusion_matrix.jpg"  # Specify the output file name
+        plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
+        plt.show()
+
+    def visualise_4_plots(self):
         # Detailed plots with strain 4 cases used in paper
         # NOTE: the plot numbers do not currently match due to differnt data importing behaviour in kaggle
 
@@ -326,5 +371,219 @@ class TrainingAnalysis:
             plt.tight_layout()  # Ensure plots don't overlap
             plt.show()
 
+    # Create a coloured correlation analysis with legend
+    def visualise_correlation_legend(self):
+        trainPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Input\Scan"
+        maskPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Input\Mask"
+        testPathW = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Target\W"
 
+        # Define function to import images
+        def import_images_label(folder_path, name):
+            image_data_list = []
+            file_path = os.path.join(folder_path, name)
+            img = tiff.imread(file_path)
+            img[np.isnan(img)] = 0
+            # Extract the identifier from the file name
+            identifier = name.split("_")[0]  # Assuming the identifier is before the first underscore
+            image_data_list.append((img, identifier))
+            return image_data_list
+
+        # Get the list of files in testPathU (this was chosen generically as files in all directories have the same name)
+        test_w_files = set([f for f in os.listdir(testPathW) if os.path.isfile(os.path.join(testPathW, f))])
+
+        bone_data = [[], [], [], [], []]
+        for file in os.listdir(trainPath):
+            if file in test_w_files:
+                bone_data[0].extend(import_images_label(trainPath, file))
+
+        ident_only = [data[1] for data in bone_data[0]]
+
+        data_split = DataSplit(ident_only)
+        ident_train, ident_val, ident_test = data_split.split_data()
+        ident_test = np.array(ident_test)
+
+        # Define the mappings
+        # Slice numbers obtained using: np.unique(ident_test, return_counts=True)
+        mapping = {
+            'S1': "Intact 1 (6 Slices)",
+            'S2': "Anterior Lesion 1 (3 Slices)",
+            'S3': "Intact 2 (0 slices)",
+            'S4': "Lateral Lesion 1 (2 Slices)",
+            'S5': "Intact 3 (1 Slices)",
+            'S6': "Lateral Lesion 2 (2 Slices)",
+            'S7': "Intact 4 (2 Slices)",
+            'S8': "Anterior Lesion 2 (5 Slices)",
+            'S9': "Intact 5 (3 Slices)",
+            'S10': "Anterior Lesion 3 (2 Slices)"
+        }
+
+        # Create a new variable with the updated strings based on the mappings
+        new_ident_test = np.vectorize(mapping.get)(ident_test)
+
+        num_test_samples = self.predictions.shape[0]
+        ident_test_3d = new_ident_test.reshape((num_test_samples, 1, 1))  # Reshape to 26x1x1
+
+        # Now, use broadcasting to repeat the values along the other dimensions
+        ident_test_3d = np.broadcast_to(ident_test_3d, (num_test_samples, 20, 20))
+
+        # Create a function to calculate correlation and plot the data with color-coded points
+        def plot_correlation_with_colors(predicted_data, target_data, labels, title, title2, title3):
+            # Flatten the data if they are not already 1D arrays
+            predicted_data = predicted_data.reshape(-1)
+            target_data = target_data.reshape(-1)
+            labels = labels.reshape(-1)
+
+            # Create a filter to exclude data points where either value is 0
+            non_zero_filter = (predicted_data != 0) & (target_data != 0)
+
+            # Apply the filter to all datasets
+            predicted_data = predicted_data[non_zero_filter]
+            target_data = target_data[non_zero_filter]
+            labels = labels[non_zero_filter]
+
+            # Calculate the correlation coefficient
+            correlation_coefficient, _ = pearsonr(predicted_data, target_data)
+
+            # Calculate the coefficients for the line of best fit (linear regression)
+            coefficients = np.polyfit(predicted_data, target_data, 1)
+
+            # Create the linear regression line using the coefficients
+            line_of_best_fit = np.poly1d(coefficients)
+
+            # Create a colormap based on the number of unique labels
+            num_labels = len(np.unique(labels))
+            color_map = plt.cm.tab10
+
+            # Create a scatter plot with color-coded points
+            for label in np.unique(labels):
+                label_indices = labels == label
+                plt.scatter(predicted_data[label_indices], target_data[label_indices], label=label, alpha=0.3, s=12)
+                plt.tick_params(labelsize=20)
+
+            # Plot the linear regression line
+            plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
+
+            plt.title(f'{title3}: $R^2 =$ {correlation_coefficient:.2f}', fontsize=30)
+            plt.xlabel(f'Predicted {title2}', fontsize=25)
+            plt.ylabel(f'Measured {title}', fontsize=25)
+            plt.grid(True)
+
+        # Extract the data
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                       (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                   (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                     (self.predictions * self.global_std + self.global_mean), 0.0)
+
+        # Create a figure with three subplots
+        fig, axs = plt.subplots(2, 2, figsize=(20, 20))
+
+        # Plot correlations for U displacement
+        plt.sca(axs[0, 0])
+        plot_correlation_with_colors(predicted_data_D2IM, target_data_ezz, ident_test_3d, '$ezz$',
+                                     'Derived $\overline{ezz}$', 'Displacement Derived')
+
+        # Plot correlations for V displacement
+        plt.sca(axs[0, 1])
+        plot_correlation_with_colors(predictions_model, target_data_ezz, ident_test_3d, '$ezz$',
+                                     'Directly $\overline{ezz}$', 'Directly')
+        # Place for legend
+        plt.sca(axs[1, 1])
+        axs[1, 0].axis('off')
+        axs[1, 1].axis('off')
+
+        # # Get the handles and labels for the legend from the first plot
+        handles, labels = axs[0,0].get_legend_handles_labels()
+        # # Create the legend
+        legend = fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.15),
+                            title='Vertebra', title_fontsize=30, fontsize=25, scatterpoints=1)
+
+        # # Increase the size of the legend markers and adjust their opacity
+        for handle in legend.legendHandles:
+            handle.set_sizes([100])  # Increase the size of the points
+            handle.set_alpha(1.0)   # Set the opacity of the points
+
+        plt.tight_layout()
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\correlation_legend.jpg"
+        plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
+        plt.show()
+
+    def visualise_correlation_threshold(self):
+        # Function to calculate correlation and plot the data with color-coded points
+        def plot_correlation_with_colors(predicted_data, target_data, title, title2, title3):
+            # Flatten the data if they are not already 1D arrays
+            predicted_data = predicted_data.reshape(-1)
+            target_data = target_data.reshape(-1)
+
+            # Filter out data points where either value is 0
+            non_zero_filter = (predicted_data != 0) & (target_data != 0)
+            predicted_data = predicted_data[non_zero_filter]
+            target_data = target_data[non_zero_filter]
+
+            # Calculate correlation coefficient
+            correlation_coefficient, _ = pearsonr(predicted_data, target_data)
+
+            # Calculate line of best fit
+            coefficients = np.polyfit(predicted_data, target_data, 1)
+            line_of_best_fit = np.poly1d(coefficients)
+
+            # Highlight points with target_data > 10,000
+            highlight_filter = abs(target_data) > 10000
+            colors = np.where(highlight_filter, 'red', 'blue')
+
+            # Plot points with color highlighting
+            plt.scatter(predicted_data, target_data, c=colors, alpha=0.5, s=12,
+                        label='>10000' if np.any(highlight_filter) else '<=10000')
+            plt.tick_params(labelsize=15)
+
+            # Plot the line of best fit
+            plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
+
+            # Plot title and labels
+            plt.title(f'{title3}: $R^2 =$ {correlation_coefficient:.2f}', fontsize=30)
+            plt.xlabel(f'Predicted {title2}', fontsize=25)
+            plt.ylabel(f'Measured {title}', fontsize=25)
+            plt.grid(True)
+
+        # Extract the data
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                           (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                       (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                         (self.predictions * self.global_std + self.global_mean), 0.0)
+
+        # Create a figure with three subplots
+        fig, axs = plt.subplots(2, 2, figsize=(20, 20))
+
+        # Plot correlations for U displacement
+        plt.sca(axs[0, 0])
+        plot_correlation_with_colors(predicted_data_D2IM, target_data_ezz, '$ezz$',
+                                     'Derived $\overline{ezz}$', 'Displacement Derived')
+
+        # Plot correlations for V displacement
+        plt.sca(axs[0, 1])
+        plot_correlation_with_colors(predictions_model, target_data_ezz, '$ezz$',
+                                     'Directly $\overline{ezz}$', 'Directly')
+        # Place for legend
+        plt.sca(axs[1, 1])
+        axs[1, 0].axis('off')
+        axs[1, 1].axis('off')
+
+        # # Get the handles and labels for the legend from the first plot
+        handles, labels = axs[0, 0].get_legend_handles_labels()
+        # # Create the legend
+        legend = fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.52, 0.38),
+                            title='Measured Value', title_fontsize=30, fontsize=25, scatterpoints=1)
+
+        # # Increase the size of the legend markers and adjust their opacity
+        for handle in legend.legendHandles:
+            handle.set_sizes([100])  # Increase the size of the points
+            handle.set_alpha(1.0)  # Set the opacity of the points
+
+        plt.tight_layout()
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\correlation_10K.jpg"
+        plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
+        plt.show()
 

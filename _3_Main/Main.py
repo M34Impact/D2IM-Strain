@@ -62,14 +62,18 @@ if __name__ == "__main__":
     mask_train, mask_val, mask_test = mask_split.split_data()
 
     # Training CNN - commented, loading from stored
-    scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
-    scan_model.train()
+    # scan_model = ScanModel(scan_train, scan_val, mask_train, mask_val, strain_train, strain_val)
+    # scan_model.train()
 
-    # Post Training Analysis
+    # Post Training Analysis - uses saved, trained model
     analysis = TrainingAnalysis(scan_train, scan_val, scan_test,
                                 mask_train, mask_val, mask_test,
                                 strain_train, strain_val, strain_test,
-                                strain_pred_train, strain_pred_val, strain_pred_test)
+                                strain_pred_train, strain_pred_val, strain_pred_test,
+                                strain_obj.global_std, strain_obj.global_mean)
     analysis.calculate_loss()
-    analysis.visualiseCorrelation()
-    analysis.visualise()
+    analysis.visualise_correlation()
+    analysis.visualise_correlation_legend()
+    analysis.visualise_correlation_threshold()
+    # analysis.visualise_confusion_matrix()
+    # analysis.visualise_4_plots()
