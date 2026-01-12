@@ -256,7 +256,7 @@ class TrainingAnalysis:
         create_confusion_matrix(predictions_model, target_data_ezz, ax=axs[1], title="Directly")
 
         plt.tight_layout()
-        output_file = r"/_4_Figure/confusion_matrix.jpg"  # Specify the output file name
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\confusion_matrix.jpg"  # Specify the output file name
         plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
         plt.show()
 

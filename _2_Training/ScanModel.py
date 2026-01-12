@@ -95,8 +95,8 @@ class ScanModel:
         output_shape = (self.strain_train.shape[1], self.strain_train.shape[2])
 
         # Define regularisation and create the model
-        dropout_rate = 0.5
-        l2_lambda = 1e-5
+        dropout_rate = 0.2
+        l2_lambda = 1e-6
         model = self.create_cnn(input_shape1, input_shape2, output_shape, dropout_rate, l2_lambda)
         model.summary()
 

@@ -75,5 +75,5 @@ if __name__ == "__main__":
     analysis.visualise_correlation()
     analysis.visualise_correlation_legend()
     analysis.visualise_correlation_threshold()
-    # analysis.visualise_confusion_matrix()
+    analysis.visualise_confusion_matrix()
     # analysis.visualise_4_plots()
