@@ -477,7 +477,7 @@ class TrainingAnalysis:
                                      (self.predictions * self.global_std + self.global_mean), 0.0)
 
         # Create a figure with three subplots
-        fig, axs = plt.subplots(2, 2, figsize=(20, 20))
+        fig, axs = plt.subplots(2, 2, figsize=(20, 18))
 
         # Plot correlations for U displacement
         plt.sca(axs[0, 0])
@@ -810,3 +810,137 @@ class TrainingAnalysis:
             output_file = f"C:\\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\Strain_output_{i}.jpg"  # Specify the output file name
             plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
             plt.show()
+
+    def highlight_edges(self, ax, error, ezz_t_i, ezz_p_i, color, highlight):
+        """
+        Highlight specific regions in the error plot based on strain magnitudes
+
+        Parameters:
+        - ax: matplotlib axis object
+        - error: error array to display
+        - ezz_t_i: target strain values
+        - ezz_p_i: predicted strain values
+        - color: color for the highlight edges
+        - highlight: 1 (low-low), 2 (high-low), 3 (high-high)
+        """
+        if highlight == 1:
+            highlight_mask = (np.abs(ezz_p_i) < 10000) & (np.abs(ezz_t_i) < 10000) & (error > 0)
+        elif highlight == 2:
+            highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) < 10000) & (error > 0)
+        elif highlight == 3:
+            highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) > 10000) & (error > 0)
+
+        # Apply transparency to the error plot outside of the highlight box
+        im = ax.imshow(np.ma.masked_where(highlight_mask, error), cmap='jet', vmin=0, vmax=100, alpha=0.35)
+        im = ax.imshow(np.ma.masked_where(~highlight_mask, error), cmap='jet', vmin=0, vmax=100, alpha=1.0)
+
+        # Draw edges around highlighted regions
+        for i in range(error.shape[0]):
+            for j in range(error.shape[1]):
+                if highlight_mask[i, j]:
+                    if i == 0 or not highlight_mask[i - 1, j]:
+                        ax.plot([j - 0.5, j + 0.5], [i - 0.5, i - 0.5], color=color, linewidth=7)
+                    if i == error.shape[0] - 1 or not highlight_mask[i + 1, j]:
+                        ax.plot([j - 0.5, j + 0.5], [i + 0.5, i + 0.5], color=color, linewidth=7)
+                    if j == 0 or not highlight_mask[i, j - 1]:
+                        ax.plot([j - 0.5, j - 0.5], [i - 0.5, i + 0.5], color=color, linewidth=7)
+                    if j == error.shape[1] - 1 or not highlight_mask[i, j + 1]:
+                        ax.plot([j + 0.5, j + 0.5], [i - 0.5, i + 0.5], color=color, linewidth=7)
+
+        return im
+
+    def visualise_strain_highlighted_comparison(self):
+        """
+        Visualize strain predictions with error highlighting
+        - Row 1: D2IM predictions for 4 different scans
+        - Row 2: Model predictions for the same 4 scans
+        - Each cell shows the error with highlighting
+        """
+        plot_num = [24, 4, 3, 9]  # Four scans to display as columns
+
+        # Prepare data
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                       (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                   (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                     (self.predictions * self.global_std + self.global_mean), 0.0)
+
+        output_shape = (self.strain_train.shape[1], self.strain_train.shape[2])
+
+        # Create figure with 2 rows x 4 columns
+        fig = plt.figure(figsize=(20, 10))
+        gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1, 1], hspace=0.05, wspace=0.05)
+
+        im_list = []  # Store imshow objects for colorbar
+
+        # ============================================================
+        # ROW 1: D2IM Predictions (Derived Model)
+        # ============================================================
+        for col_idx, scan_idx in enumerate(plot_num):
+            print(f"Processing D2IM - scan {scan_idx}")
+
+            # Prepare images
+            predicted_image_d2im = np.flipud(predicted_data_D2IM[scan_idx].reshape(output_shape))
+            target_image = np.flipud(target_data_ezz[scan_idx].reshape(output_shape))
+
+            # Calculate error
+            error_d2im = np.abs((target_image - predicted_image_d2im) / target_image) * 100
+            error_d2im = np.nan_to_num(error_d2im, posinf=0, neginf=0)
+
+            # Create subplot
+            ax = plt.subplot(gs[0, col_idx])
+            im = self.highlight_edges(ax, error_d2im, target_image, predicted_image_d2im,
+                                 color='black', highlight=1)
+            im_list.append(im)
+
+            # Add title only for first column
+            if col_idx == 0:
+                ax.set_ylabel('D2IM Model', fontsize=16, rotation=90, labelpad=10)
+
+            ax.axis('off')
+
+        # ============================================================
+        # ROW 2: CNN Model Predictions
+        # ============================================================
+        for col_idx, scan_idx in enumerate(plot_num):
+            print(f"Processing Model - scan {scan_idx}")
+
+            # Prepare images
+            predicted_image_model = np.flipud(predictions_model[scan_idx].reshape(output_shape))
+            target_image = np.flipud(target_data_ezz[scan_idx].reshape(output_shape))
+
+            # Calculate error
+            error_model = np.abs((target_image - predicted_image_model) / target_image) * 100
+            error_model = np.nan_to_num(error_model, posinf=0, neginf=0)
+
+            # Create subplot
+            ax = plt.subplot(gs[1, col_idx])
+            im = self.highlight_edges(ax, error_model, target_image, predicted_image_model,
+                                 color='green', highlight=3)
+            im_list.append(im)
+
+            # Add title only for first column
+            if col_idx == 0:
+                ax.set_ylabel('CNN Model', fontsize=16, rotation=90, labelpad=10)
+
+            ax.axis('off')
+
+        # ============================================================
+        # Add Colorbar
+        # ============================================================
+        gs_colorbar = gridspec.GridSpec(1, 1)
+        gs_colorbar.update(left=0.91, right=0.93, bottom=0.11, top=0.88)
+        cbar_ax = fig.add_subplot(gs_colorbar[0])
+        cbar = plt.colorbar(im_list[0], cax=cbar_ax)
+        cbar.ax.tick_params(labelsize=15)
+        cbar.set_label('Error (%)', fontsize=20)
+
+        plt.tight_layout()
+
+        # Save figure
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\Strain_comparison_highlighted.jpg"
+        plt.savefig(output_file, dpi=500, bbox_inches='tight')
+        print(f"Saved: {output_file}")
+        plt.show()
+
