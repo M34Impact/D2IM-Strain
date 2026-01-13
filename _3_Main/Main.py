@@ -71,9 +71,12 @@ if __name__ == "__main__":
                                 strain_train, strain_val, strain_test,
                                 strain_pred_train, strain_pred_val, strain_pred_test,
                                 strain_obj.global_std, strain_obj.global_mean)
-    analysis.calculate_loss()
-    analysis.visualise_correlation()
-    analysis.visualise_correlation_legend()
-    analysis.visualise_correlation_threshold()
-    analysis.visualise_confusion_matrix()
+    analysis.calculate_loss() # Don't comment! Used to get self.predictions
+    # analysis.visualise_correlation()
+    # analysis.visualise_correlation_legend()
+    # analysis.visualise_correlation_threshold()
+    # analysis.visualise_confusion_matrix()
+    # analysis.visualise_box_plot()
+    # analysis.visualise_box_plot2()
+    analysis.visualise_strain()
     # analysis.visualise_4_plots()

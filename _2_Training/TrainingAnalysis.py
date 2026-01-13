@@ -587,3 +587,226 @@ class TrainingAnalysis:
         plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
         plt.show()
 
+    def visualise_box_plot(self):
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                       (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                   (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                     (self.predictions * self.global_std + self.global_mean), 0.0)
+
+        # Relative error of displacement predictions
+
+        # Ensure all arrays have the same shape
+        predicted_data_1 = predicted_data_D2IM.reshape(-1)
+        predicted_data_2 = predictions_model.reshape(-1)
+
+        target_data_str = target_data_ezz.reshape(-1)
+
+        # Create filters to exclude data points where either value is 0
+        non_zero_filter_1 = (predicted_data_1 != 0) & (target_data_str != 0)
+        non_zero_filter_2 = (predicted_data_2 != 0) & (target_data_str != 0)
+
+        # Apply the filters to both datasets
+        predicted_data_1 = predicted_data_1[non_zero_filter_1]
+        predicted_data_2 = predicted_data_2[non_zero_filter_2]
+
+        target_data_1 = target_data_str[non_zero_filter_1]
+        target_data_2 = target_data_str[non_zero_filter_2]
+
+        # Calculate relative errors
+        relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
+        relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
+
+        # Create a box and whisker plot for all relative errors on the same plot
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        bp = ax.boxplot(
+            [relative_errors_1 * 100,
+             relative_errors_2 * 100],
+            vert=True,
+            showfliers=False,
+            labels=['D2IM', 'Directly'],
+            patch_artist=True,  # Color code the boxes
+            medianprops={'color': 'black'}  # Set median line color to black
+        )
+
+        # Color code the boxes
+        colors = ['lightblue', 'lightgreen']
+        for patch, color in zip(bp['boxes'], colors):
+            patch.set_facecolor(color)
+
+        ax.set_ylabel('Strain Error (%)')
+        ax.set_title('Relative Error of Strain Predictions without bone yield')
+
+        plt.tight_layout()
+
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_without_bone_yield.jpg"  # Specify the output file name
+        plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
+        plt.show()
+
+    def visualise_box_plot2(self):
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                       (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                   (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                     (self.predictions * self.global_std + self.global_mean), 0.0)
+        # Relative error of displacement predictions
+
+        high_value_filter = abs(target_data_ezz) > 10000
+
+        # Ensure all arrays have the same shape
+        predicted_data_1 = predicted_data_D2IM[high_value_filter].reshape(-1)
+        predicted_data_2 = predictions_model[high_value_filter].reshape(-1)
+
+        target_data_str = target_data_ezz[high_value_filter].reshape(-1)
+
+        # Create filters to exclude data points where either value is 0
+        non_zero_filter_1 = (predicted_data_1 != 0) & (target_data_str != 0)
+        non_zero_filter_2 = (predicted_data_2 != 0) & (target_data_str != 0)
+
+        # Apply the filters to both datasets
+        predicted_data_1 = predicted_data_1[non_zero_filter_1]
+        predicted_data_2 = predicted_data_2[non_zero_filter_2]
+
+        target_data_1 = target_data_str[non_zero_filter_1]
+        target_data_2 = target_data_str[non_zero_filter_2]
+
+        # Calculate relative errors
+        relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
+        relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
+
+        # Create a box and whisker plot for all relative errors on the same plot
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        bp = ax.boxplot(
+            [relative_errors_1 * 100,
+             relative_errors_2 * 100],
+            vert=True,
+            showfliers=False,
+            labels=['D2IM', 'Directly'],
+            patch_artist=True,  # Color code the boxes
+            medianprops={'color': 'black'}  # Set median line color to black
+        )
+
+        # Color code the boxes
+        colors = ['lightblue', 'lightgreen']
+        for patch, color in zip(bp['boxes'], colors):
+            patch.set_facecolor(color)
+
+        ax.set_ylabel('Strain Error (%)')
+        ax.set_title('Relative Error of Strain Predictions with bone yield')
+
+        plt.tight_layout()
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_with_bone_yield.jpg"
+        plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
+        plt.show()
+
+    # Detailed plots with strain 4 cases used in paper
+    # NOTE: the plot numbers do not currently match due to differnt data importing behaviour in kaggle
+    def visualise_strain(self):
+        plot_num = [3, 4, 9, 24]
+
+        vs = 39  # real voxel size um
+        ns = 50  # Node spacing
+
+        predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
+                                       (self.pezz_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        target_data_ezz = np.where(self.mask_test.reshape(26, 400),
+                                   (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
+        predictions_model = np.where(self.mask_test.reshape(26, 400),
+                                     (self.predictions * self.global_std + self.global_mean), 0.0)
+
+        input_shape1 = (self.scan_train.shape[1], self.scan_train.shape[2], 1)
+        output_shape = (self.strain_train.shape[1], self.strain_train.shape[2])
+
+        for i in plot_num:  # Loop through each sample
+            print("plot ", i)
+            plt.figure(figsize=(20, 10))  # Adjust the figure size to accommodate 2 plots
+
+            predicted_image = (np.flipud(predicted_data_D2IM[i].reshape(output_shape)))
+            target_image = np.flipud(target_data_ezz[i].reshape(output_shape))
+
+            min_s = np.array([target_data_ezz[i].min(), predictions_model[i].min()]).min()
+            max_s = np.array([target_data_ezz[i].max(), predictions_model[i].max()]).max()
+
+            # Create a grid of subplots
+            gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1.065, 1.065])
+
+            # Plot the input image
+            ax3 = plt.subplot(gs[0, 0])  # Fourth subplot
+            input_image = np.flipud(self.input_data_test1[i].reshape(input_shape1[:2]))
+            im3 = ax3.imshow(input_image, cmap='gray', vmin=0, vmax=1)
+            ax3.set_title("Input Image")
+            ax3.axis('off')
+
+            # Plot the ground truth target value
+            ax1 = plt.subplot(gs[0, 1])  # First subplot
+            im1 = ax1.imshow(target_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
+            ax1.set_title("Measured Strain ε$_{zz}$ (με)")
+            ax1.axis('off')
+
+            # Plot the predicted output
+            ax2 = plt.subplot(gs[0, 2], sharey=ax1)  # Second subplot, sharing y-axis with the first subplot
+            im2 = ax2.imshow(predicted_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
+            ax2.set_title("Predicted Strain $ε_{zz}$ (με)")
+
+            # shared axes
+            divider = make_axes_locatable(ax2)
+            cax = divider.append_axes("right", size="5%", pad=0.05)  # Adjust the size and padding
+            plt.colorbar(im2, cax=cax)  # Add colorbar to the right side
+            cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
+            ax2.axis('off')
+
+            error = np.abs((target_image - predicted_image) / (target_image)) * 100
+            error = np.nan_to_num(error, posinf=0, neginf=0)
+            # Plot the displacement error
+            ax3 = plt.subplot(gs[0, 3])  # First subplot
+            # im3 = ax3.imshow((np.abs(ezz_t_i-ezz_p_i)/ezz_t_i)*100, cmap='jet')
+            im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
+            # im3 = ax3.imshow(np.abs(ezz_t_i-ezz_p_i)/ezz_t_i, cmap='jet', vmin=0, vmax=max_strerr_bar)
+            ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|")
+
+            #### block 2
+
+            predicted_image = (np.flipud(predictions_model[i].reshape(output_shape)))
+            # Plot the input image
+            ax3 = plt.subplot(gs[1, 0])  # Fourth subplot
+            input_image = np.flipud(self.input_data_test1[i].reshape(input_shape1[:2]))
+            im3 = ax3.imshow(input_image, cmap='gray', vmin=0, vmax=1)
+            ax3.set_title("Input Image")
+            ax3.axis('off')
+
+            # Plot the ground truth target value
+            ax1 = plt.subplot(gs[1, 1])  # First subplot
+            im1 = ax1.imshow(target_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
+            ax1.set_title("Measured Strain ε$_{zz}$ (με)")
+            ax1.axis('off')
+
+            # Plot the predicted output
+            ax2 = plt.subplot(gs[1, 2], sharey=ax1)  # Second subplot, sharing y-axis with the first subplot
+            im2 = ax2.imshow(predicted_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
+            ax2.set_title("Predicted Strain $ε_{zz}$ (με)")
+
+            # shared axes
+            divider = make_axes_locatable(ax2)
+            cax = divider.append_axes("right", size="5%", pad=0.05)  # Adjust the size and padding
+            plt.colorbar(im2, cax=cax)  # Add colorbar to the right side
+            cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
+            ax2.axis('off')
+
+            error = np.abs((target_image - predicted_image) / (target_image)) * 100
+            error = np.nan_to_num(error, posinf=0, neginf=0)
+            # Plot the displacement error
+            ax3 = plt.subplot(gs[1, 3])  # First subplot
+            # im3 = ax3.imshow((np.abs(ezz_t_i-ezz_p_i)/ezz_t_i)*100, cmap='jet')
+            im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
+            # im3 = ax3.imshow(np.abs(ezz_t_i-ezz_p_i)/ezz_t_i, cmap='jet', vmin=0, vmax=max_strerr_bar)
+            ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|")
+            ax3.axis('off')
+
+            plt.tight_layout()  # Ensure plots don't overlap
+            output_file = f"C:\\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\Strain_output_{i}.jpg"  # Specify the output file name
+            plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
+            plt.show()
