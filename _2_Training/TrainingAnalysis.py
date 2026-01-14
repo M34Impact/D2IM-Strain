@@ -175,7 +175,7 @@ class TrainingAnalysis:
             for label in np.unique(labels):
                 label_indices = labels == label
                 plt.scatter(predicted_data[label_indices], target_data[label_indices], label=label, alpha=0.3, s=12)
-                plt.tick_params(labelsize=20)
+                plt.tick_params(labelsize=15)
 
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
@@ -458,7 +458,7 @@ class TrainingAnalysis:
             for label in np.unique(labels):
                 label_indices = labels == label
                 plt.scatter(predicted_data[label_indices], target_data[label_indices], label=label, alpha=0.3, s=12)
-                plt.tick_params(labelsize=20)
+                plt.tick_params(labelsize=15)
 
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
