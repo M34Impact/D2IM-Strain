@@ -80,4 +80,4 @@ if __name__ == "__main__":
     # analysis.visualise_box_plot()
     # analysis.visualise_box_plot2()
     # analysis.visualise_strain()
-    # analysis.visualise_strain_highlighted_comparison()
+    # analysis.visualise_strain_highlighted()
