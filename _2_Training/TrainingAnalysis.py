@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt, gridspec
 import os
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.ndimage import binary_erosion, binary_dilation
 from scipy.stats import pearsonr
 import numpy as np
 import tiffile as tiff
@@ -811,44 +812,6 @@ class TrainingAnalysis:
             plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
             plt.show()
 
-    def highlight_edges(self, ax, error, ezz_t_i, ezz_p_i, color, highlight):
-        """
-        Highlight specific regions in the error plot based on strain magnitudes
-
-        Parameters:
-        - ax: matplotlib axis object
-        - error: error array to display
-        - ezz_t_i: target strain values
-        - ezz_p_i: predicted strain values
-        - color: color for the highlight edges
-        - highlight: 1 (low-low), 2 (high-low), 3 (high-high)
-        """
-        if highlight == 1:
-            highlight_mask = (np.abs(ezz_p_i) < 10000) & (np.abs(ezz_t_i) < 10000) & (error > 0)
-        elif highlight == 2:
-            highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) < 10000) & (error > 0)
-        elif highlight == 3:
-            highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) > 10000) & (error > 0)
-
-        # Apply transparency to the error plot outside of the highlight box
-        im = ax.imshow(np.ma.masked_where(highlight_mask, error), cmap='jet', vmin=0, vmax=100, alpha=0.35)
-        im = ax.imshow(np.ma.masked_where(~highlight_mask, error), cmap='jet', vmin=0, vmax=100, alpha=1.0)
-
-        # Draw edges around highlighted regions
-        for i in range(error.shape[0]):
-            for j in range(error.shape[1]):
-                if highlight_mask[i, j]:
-                    if i == 0 or not highlight_mask[i - 1, j]:
-                        ax.plot([j - 0.5, j + 0.5], [i - 0.5, i - 0.5], color=color, linewidth=7)
-                    if i == error.shape[0] - 1 or not highlight_mask[i + 1, j]:
-                        ax.plot([j - 0.5, j + 0.5], [i + 0.5, i + 0.5], color=color, linewidth=7)
-                    if j == 0 or not highlight_mask[i, j - 1]:
-                        ax.plot([j - 0.5, j - 0.5], [i - 0.5, i + 0.5], color=color, linewidth=7)
-                    if j == error.shape[1] - 1 or not highlight_mask[i, j + 1]:
-                        ax.plot([j + 0.5, j + 0.5], [i - 0.5, i + 0.5], color=color, linewidth=7)
-
-        return im
-
     def visualise_strain_highlighted(self):
         target_data_ezz = np.where(
             self.mask_test.reshape(26, 400),
@@ -898,11 +861,11 @@ class TrainingAnalysis:
 
         def highlight_edges(ax, error, ezz_t_i, ezz_p_i, color, highlight):
             if highlight == 1:
-                highlight_mask = (np.abs(ezz_p_i) < 10000) & (np.abs(ezz_t_i) < 10000)
+                highlight_mask = (np.abs(ezz_p_i) < 10000) & (np.abs(ezz_t_i) < 10000) & (error > 0)
             elif highlight == 2:
-                highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) < 10000)
+                highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) < 10000) & (error > 0)
             elif highlight == 3:
-                highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) > 10000)
+                highlight_mask = (np.abs(ezz_p_i) > 10000) & (np.abs(ezz_t_i) > 10000) & (error > 0)
 
             im = ax.imshow(
                 np.ma.masked_where(highlight_mask, error),
