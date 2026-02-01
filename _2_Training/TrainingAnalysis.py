@@ -253,8 +253,8 @@ class TrainingAnalysis:
         predictions_model = np.where(self.mask_test.reshape(26, 400),
                                      (self.predictions * self.global_std + self.global_mean), 0.0)
 
-        create_confusion_matrix(predicted_data_D2IM, target_data_ezz, ax=axs[0], title="Displacement Derived")
-        create_confusion_matrix(predictions_model, target_data_ezz, ax=axs[1], title="Directly")
+        create_confusion_matrix(predicted_data_D2IM, target_data_ezz, ax=axs[0], title="Displacement-Derived")
+        create_confusion_matrix(predictions_model, target_data_ezz, ax=axs[1], title="Direct Strain")
 
         plt.tight_layout()
         output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\confusion_matrix.jpg"  # Specify the output file name
@@ -483,12 +483,12 @@ class TrainingAnalysis:
         # Plot correlations for U displacement
         plt.sca(axs[0, 0])
         plot_correlation_with_colors(predicted_data_D2IM, target_data_ezz, ident_test_3d, '$ezz$',
-                                     'Derived $\overline{ezz}$', 'Displacement Derived')
+                                     'Derived $\overline{ezz}$', 'Displacement-Derived')
 
         # Plot correlations for V displacement
         plt.sca(axs[0, 1])
         plot_correlation_with_colors(predictions_model, target_data_ezz, ident_test_3d, '$ezz$',
-                                     'Directly $\overline{ezz}$', 'Directly')
+                                     'Direct $\overline{ezz}$', 'Direct Strain')
         # Place for legend
         plt.sca(axs[1, 1])
         axs[1, 0].axis('off')
@@ -497,7 +497,7 @@ class TrainingAnalysis:
         # # Get the handles and labels for the legend from the first plot
         handles, labels = axs[0,0].get_legend_handles_labels()
         # # Create the legend
-        legend = fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.15),
+        legend = fig.legend(handles, labels, loc='lower right', bbox_to_anchor=(0.4, 0.14),
                             title='Vertebra', title_fontsize=30, fontsize=25, scatterpoints=1)
 
         # # Increase the size of the legend markers and adjust their opacity
@@ -561,12 +561,12 @@ class TrainingAnalysis:
         # Plot correlations for U displacement
         plt.sca(axs[0, 0])
         plot_correlation_with_colors(predicted_data_D2IM, target_data_ezz, '$ezz$',
-                                     'Derived $\overline{ezz}$', 'Displacement Derived')
+                                     'Derived $\overline{ezz}$', 'Displacement-Derived')
 
         # Plot correlations for V displacement
         plt.sca(axs[0, 1])
         plot_correlation_with_colors(predictions_model, target_data_ezz, '$ezz$',
-                                     'Directly $\overline{ezz}$', 'Directly')
+                                     'Direct $\overline{ezz}$', 'Direct Strain')
         # Place for legend
         plt.sca(axs[1, 1])
         axs[1, 0].axis('off')
@@ -627,7 +627,7 @@ class TrainingAnalysis:
              relative_errors_2 * 100],
             vert=True,
             showfliers=False,
-            labels=['D2IM', 'Directly'],
+            labels=['Displacement-Derived', 'Direct Strain'],
             patch_artist=True,  # Color code the boxes
             medianprops={'color': 'black'}  # Set median line color to black
         )
@@ -686,7 +686,7 @@ class TrainingAnalysis:
              relative_errors_2 * 100],
             vert=True,
             showfliers=False,
-            labels=['D2IM', 'Directly'],
+            labels=['Displacement-Derived', 'Direct Strain'],
             patch_artist=True,  # Color code the boxes
             medianprops={'color': 'black'}  # Set median line color to black
         )
