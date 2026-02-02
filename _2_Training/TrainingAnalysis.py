@@ -8,7 +8,7 @@ from scipy.stats import pearsonr
 import numpy as np
 import tiffile as tiff
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, r2_score
 import seaborn as sns
 
 from _2_Training.DataSpilt import DataSplit
@@ -159,8 +159,8 @@ class TrainingAnalysis:
             target_data = target_data[non_zero_filter]
             labels = labels[non_zero_filter]
 
-            # Calculate the correlation coefficient
-            correlation_coefficient, _ = pearsonr(predicted_data, target_data)
+            # Calculate R^2
+            r2 = r2_score(target_data, predicted_data)
 
             # Calculate the coefficients for the line of best fit (linear regression)
             coefficients = np.polyfit(predicted_data, target_data, 1)
@@ -181,7 +181,7 @@ class TrainingAnalysis:
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
-            plt.title(f'Correlation: $R^2 =$ {correlation_coefficient:.2f}', fontsize=30)
+            plt.title(f'Correlation: $R^2 =$ {r2:.2f}', fontsize=30)
             plt.xlabel(f'Predicted {title2}', fontsize=25)
             plt.ylabel(f'Measured {title}', fontsize=25)
             plt.grid(True)
@@ -442,8 +442,8 @@ class TrainingAnalysis:
             target_data = target_data[non_zero_filter]
             labels = labels[non_zero_filter]
 
-            # Calculate the correlation coefficient
-            correlation_coefficient, _ = pearsonr(predicted_data, target_data)
+            # Calculate R^2
+            r2 = r2_score(target_data, predicted_data)
 
             # Calculate the coefficients for the line of best fit (linear regression)
             coefficients = np.polyfit(predicted_data, target_data, 1)
@@ -464,7 +464,7 @@ class TrainingAnalysis:
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
-            plt.title(f'{title3}: $R^2 =$ {correlation_coefficient:.2f}', fontsize=30)
+            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=30)
             plt.xlabel(f'Predicted {title2}', fontsize=25)
             plt.ylabel(f'Measured {title}', fontsize=25)
             plt.grid(True)
@@ -522,8 +522,8 @@ class TrainingAnalysis:
             predicted_data = predicted_data[non_zero_filter]
             target_data = target_data[non_zero_filter]
 
-            # Calculate correlation coefficient
-            correlation_coefficient, _ = pearsonr(predicted_data, target_data)
+            # Calculate R^2
+            r2 = r2_score(target_data, predicted_data)
 
             # Calculate line of best fit
             coefficients = np.polyfit(predicted_data, target_data, 1)
@@ -542,7 +542,7 @@ class TrainingAnalysis:
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
             # Plot title and labels
-            plt.title(f'{title3}: $R^2 =$ {correlation_coefficient:.2f}', fontsize=30)
+            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=30)
             plt.xlabel(f'Predicted {title2}', fontsize=25)
             plt.ylabel(f'Measured {title}', fontsize=25)
             plt.grid(True)
