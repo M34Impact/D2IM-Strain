@@ -204,7 +204,7 @@ class TrainingAnalysis:
         # Plot correlations for V displacement
         plt.sca(axs[1])
         plot_correlation_with_colors(predicted_data_D2IM_str, target_data_ezz, ident_test_3d, '$ezz$',
-                                     'Directly $\overline{ezz}$')
+                                     'Direct $\overline{ezz}$')
 
         # # Get the handles and labels for the legend from the first plot
         # handles, labels = axs[0,0].get_legend_handles_labels()
