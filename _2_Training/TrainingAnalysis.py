@@ -235,12 +235,19 @@ class TrainingAnalysis:
             cm = confusion_matrix(target_classes, predicted_classes)
 
             # Plot the confusion matrix in the specified subplot
-            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", cbar=False,
-                        xticklabels=["Predicted <10000", "Predicted ≥10000"],
-                        yticklabels=["Actual <10000", "Actual ≥10000"], ax=ax)
-            ax.set_xlabel("Predicted Class")
-            ax.set_ylabel("Actual Class")
-            ax.set_title(title)
+            sns.heatmap(
+                cm,
+                annot=True,
+                fmt="d",
+                cmap="Blues",
+                cbar=False,
+                xticklabels=["Predicted <10000", "Predicted ≥10000"],
+                yticklabels=["Actual <10000", "Actual ≥10000"],
+                annot_kws={"size": 18},
+                ax=ax
+            )
+            ax.tick_params(labelsize=16)
+            ax.set_title(title, fontsize=18)
 
         # Plot each confusion matrix with its own title
         fig, axs = plt.subplots(1, 2, figsize=(15, 5))
@@ -464,9 +471,9 @@ class TrainingAnalysis:
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
-            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=30)
-            plt.xlabel(f'Predicted {title2}', fontsize=25)
-            plt.ylabel(f'Measured {title}', fontsize=25)
+            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=24)
+            plt.xlabel(f'Predicted {title2}', fontsize=20)
+            plt.ylabel(f'Measured {title}', fontsize=20)
             plt.grid(True)
 
         # Extract the data
@@ -478,27 +485,25 @@ class TrainingAnalysis:
                                      (self.predictions * self.global_std + self.global_mean), 0.0)
 
         # Create a figure with three subplots
-        fig, axs = plt.subplots(2, 2, figsize=(20, 18))
+        fig, axs = plt.subplots(1, 2, figsize=(20, 10))
 
         # Plot correlations for U displacement
-        plt.sca(axs[0, 0])
+        plt.sca(axs[0])
         plot_correlation_with_colors(predicted_data_D2IM, target_data_ezz, ident_test_3d, '$ezz$',
                                      'Derived $\overline{ezz}$', 'Displacement-Derived')
 
         # Plot correlations for V displacement
-        plt.sca(axs[0, 1])
+        plt.sca(axs[1])
         plot_correlation_with_colors(predictions_model, target_data_ezz, ident_test_3d, '$ezz$',
                                      'Direct $\overline{ezz}$', 'Direct Strain')
         # Place for legend
-        plt.sca(axs[1, 1])
-        axs[1, 0].axis('off')
-        axs[1, 1].axis('off')
+        plt.sca(axs[0])
 
         # # Get the handles and labels for the legend from the first plot
-        handles, labels = axs[0,0].get_legend_handles_labels()
+        handles, labels = axs[0].get_legend_handles_labels()
         # # Create the legend
-        legend = fig.legend(handles, labels, loc='lower right', bbox_to_anchor=(0.4, 0.14),
-                            title='Vertebra', title_fontsize=30, fontsize=25, scatterpoints=1)
+        legend = fig.legend(handles, labels, loc='upper left', bbox_to_anchor=(0.08, 0.93),
+                            title='Vertebra', title_fontsize=18, fontsize=14, scatterpoints=1)
 
         # # Increase the size of the legend markers and adjust their opacity
         for handle in legend.legendHandles:
@@ -556,27 +561,25 @@ class TrainingAnalysis:
                                          (self.predictions * self.global_std + self.global_mean), 0.0)
 
         # Create a figure with three subplots
-        fig, axs = plt.subplots(2, 2, figsize=(20, 20))
+        fig, axs = plt.subplots(1, 2, figsize=(20, 8))
 
         # Plot correlations for U displacement
-        plt.sca(axs[0, 0])
+        plt.sca(axs[0])
         plot_correlation_with_colors(predicted_data_D2IM, target_data_ezz, '$ezz$',
                                      'Derived $\overline{ezz}$', 'Displacement-Derived')
 
         # Plot correlations for V displacement
-        plt.sca(axs[0, 1])
+        plt.sca(axs[1])
         plot_correlation_with_colors(predictions_model, target_data_ezz, '$ezz$',
                                      'Direct $\overline{ezz}$', 'Direct Strain')
         # Place for legend
-        plt.sca(axs[1, 1])
-        axs[1, 0].axis('off')
-        axs[1, 1].axis('off')
+        plt.sca(axs[0])
 
         # # Get the handles and labels for the legend from the first plot
-        handles, labels = axs[0, 0].get_legend_handles_labels()
+        handles, labels = axs[0].get_legend_handles_labels()
         # # Create the legend
-        legend = fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.52, 0.38),
-                            title='Measured Value', title_fontsize=30, fontsize=25, scatterpoints=1)
+        legend = fig.legend(handles, labels, loc='upper left', bbox_to_anchor=(0.09, 0.90),
+                            title='Measured Value', title_fontsize=18, fontsize=14, scatterpoints=1)
 
         # # Increase the size of the legend markers and adjust their opacity
         for handle in legend.legendHandles:
@@ -637,8 +640,9 @@ class TrainingAnalysis:
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
-        ax.set_ylabel('Strain Error (%)')
-        ax.set_title('Relative Error of Strain Predictions without bone yield')
+        ax.set_ylabel('Strain Error (%)', fontsize=16)
+        ax.set_title('Relative Error without bone yield', fontsize=18)
+        ax.tick_params(labelsize=16)
 
         plt.tight_layout()
 
@@ -696,8 +700,9 @@ class TrainingAnalysis:
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
-        ax.set_ylabel('Strain Error (%)')
-        ax.set_title('Relative Error of Strain Predictions with bone yield')
+        ax.set_ylabel('Strain Error (%)', fontsize=16)
+        ax.set_title('Relative Error with bone yield', fontsize=18)
+        ax.tick_params(labelsize=16)
 
         plt.tight_layout()
         output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_with_bone_yield.jpg"
@@ -733,7 +738,8 @@ class TrainingAnalysis:
             max_s = np.array([target_data_ezz[i].max(), predictions_model[i].max()]).max()
 
             # Create a grid of subplots
-            gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1.065, 1.065])
+            gs = gridspec.GridSpec(2, 4,
+                                   width_ratios=[1, 1, 1.065, 1.065])
 
             # Plot the input image
             ax3 = plt.subplot(gs[0, 0])  # Fourth subplot
