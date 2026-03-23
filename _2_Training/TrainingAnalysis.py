@@ -731,7 +731,7 @@ class TrainingAnalysis:
 
         for i in plot_num:  # Loop through each sample
             print("plot ", i)
-            plt.figure(figsize=(20, 10))  # Adjust the figure size to accommodate 2 plots
+            plt.figure(figsize=(15, 10))  # Adjust the figure size to accommodate 2 plots
 
             predicted_image = (np.flipud(predicted_data_D2IM[i].reshape(output_shape)))
             target_image = np.flipud(target_data_ezz[i].reshape(output_shape))
@@ -739,46 +739,52 @@ class TrainingAnalysis:
             min_s = np.array([target_data_ezz[i].min(), predictions_model[i].min()]).min()
             max_s = np.array([target_data_ezz[i].max(), predictions_model[i].max()]).max()
 
-            # Create a grid of subplots
-            gs = gridspec.GridSpec(2, 4,
-                                   width_ratios=[1, 1, 1.08, 1.08])
+            # Create a grid of subplots: 2 rows, 3 columns
+            gs = gridspec.GridSpec(2, 3, width_ratios=[1, 1.08, 1.08])
 
-            # Plot the input image
-            ax3 = plt.subplot(gs[0, 0])  # Fourth subplot
+            # --- Column 1, Row 1: Input Image ---
+            ax_in1 = plt.subplot(gs[0, 0])
             input_image = np.flipud(self.input_data_test1[i].reshape(input_shape1[:2]))
-            im3 = ax3.imshow(input_image, cmap='gray', vmin=0, vmax=1)
-            ax3.set_title("Input Image", fontsize=18)
-            ax3.axis('off')
+            ax_in1.imshow(input_image, cmap='gray', vmin=0, vmax=1)
+            ax_in1.set_title("Input Image", fontsize=18)
+            ax_in1.axis('off')
 
-            # Plot the ground truth target value
-            ax1 = plt.subplot(gs[0, 1])  # First subplot
-            im1 = ax1.imshow(target_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax1.set_title("Measured Strain ε$_{zz}$ (με)", fontsize=18)
-            ax1.axis('off')
+            # --- Column 1, Row 2: Measured Strain ---
+            ax_ms = plt.subplot(gs[1, 0])
+            ax_ms.imshow(target_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
+            ax_ms.set_title("Measured Strain ε$_{zz}$ (με)", fontsize=18)
+            ax_ms.axis('off')
 
-            # Plot the predicted output
-            ax2 = plt.subplot(gs[0, 2], sharey=ax1)  # Second subplot, sharing y-axis with the first subplot
+            # --- Column 2, Row 1: Derived Strain ---
+            ax2 = plt.subplot(gs[0, 1])
             im2 = ax2.imshow(predicted_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax2.set_title("Predicted Strain $ε_{zz}$ (με)", fontsize=18)
-
-            # shared axes
+            ax2.set_title("Displacement-Derived $ε_{zz}$ (με)", fontsize=18)
             divider = make_axes_locatable(ax2)
-            cax = divider.append_axes("right", size="5%", pad=0.0)  # Adjust the size and padding
-            cbar = plt.colorbar(im2, cax=cax)  # Add colorbar to the right side
-
+            cax = divider.append_axes("right", size="5%", pad=0.0)
+            cbar = plt.colorbar(im2, cax=cax)
             cbar.ax.yaxis.set_ticks_position("left")
             cbar.ax.yaxis.set_label_position("left")
             cbar.ax.tick_params(colors='white', labelsize=14)
-            # cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
             ax2.axis('off')
 
+            # --- Column 2, Row 2: Predicted Strain ---
+            predicted_image2 = (np.flipud(predictions_model[i].reshape(output_shape)))
+            ax5 = plt.subplot(gs[1, 1])
+            im5 = ax5.imshow(predicted_image2, cmap='plasma_r', vmin=min_s, vmax=max_s)
+            ax5.set_title("Direct Strain $ε_{zz}$ (με)", fontsize=18)
+            divider5 = make_axes_locatable(ax5)
+            cax5 = divider5.append_axes("right", size="5%", pad=0.0)
+            cbar5 = plt.colorbar(im5, cax=cax5)
+            cbar5.ax.yaxis.set_ticks_position("left")
+            cbar5.ax.yaxis.set_label_position("left")
+            cbar5.ax.tick_params(colors='white', labelsize=14)
+            ax5.axis('off')
+
+            # --- Column 3, Row 1: Error (Derived) ---
             error = np.abs((target_image - predicted_image) / (target_image)) * 100
             error = np.nan_to_num(error, posinf=0, neginf=0)
-            # Plot the displacement error
-            ax3 = plt.subplot(gs[0, 3])  # First subplot
-            # im3 = ax3.imshow((np.abs(ezz_t_i-ezz_p_i)/ezz_t_i)*100, cmap='jet')
+            ax3 = plt.subplot(gs[0, 2])
             im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
-            # im3 = ax3.imshow(np.abs(ezz_t_i-ezz_p_i)/ezz_t_i, cmap='jet', vmin=0, vmax=max_strerr_bar)
             ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
             # --- added colorbar row 1 ---
             divider3 = make_axes_locatable(ax3)
@@ -789,56 +795,20 @@ class TrainingAnalysis:
             cbar3.ax.yaxis.set_label_position("left")
             cbar3.ax.tick_params(colors='white', labelsize=14)
 
-            #### block 2
-
-            predicted_image = (np.flipud(predictions_model[i].reshape(output_shape)))
-            # Plot the input image
-            ax3 = plt.subplot(gs[1, 0])  # Fourth subplot
-            input_image = np.flipud(self.input_data_test1[i].reshape(input_shape1[:2]))
-            im3 = ax3.imshow(input_image, cmap='gray', vmin=0, vmax=1)
-            ax3.set_title("Input Image", fontsize=18)
-            ax3.axis('off')
-
-            # Plot the ground truth target value
-            ax1 = plt.subplot(gs[1, 1])  # First subplot
-            im1 = ax1.imshow(target_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax1.set_title("Measured Strain ε$_{zz}$ (με)", fontsize=18)
-            ax1.axis('off')
-
-            # Plot the predicted output
-            ax2 = plt.subplot(gs[1, 2], sharey=ax1)  # Second subplot, sharing y-axis with the first subplot
-            im2 = ax2.imshow(predicted_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax2.set_title("Predicted Strain $ε_{zz}$ (με)", fontsize=18)
-
-            # shared axes
-            divider = make_axes_locatable(ax2)
-            cax = divider.append_axes("right", size="5%", pad=0.0)  # Adjust the size and padding
-            cbar = plt.colorbar(im2, cax=cax)  # Add colorbar to the right side
-            cbar.ax.yaxis.set_ticks_position("left")
-            cbar.ax.yaxis.set_label_position("left")
-            cbar.ax.tick_params(colors='white', labelsize=14)
-
-            # cax.yaxis.set_ticks_position('right')  # Move the colorbar ticks to the left side
-            ax2.axis('off')
-
-            error = np.abs((target_image - predicted_image) / (target_image)) * 100
-            error = np.nan_to_num(error, posinf=0, neginf=0)
-            # Plot the displacement error
-            ax3 = plt.subplot(gs[1, 3])  # First subplot
-            # im3 = ax3.imshow((np.abs(ezz_t_i-ezz_p_i)/ezz_t_i)*100, cmap='jet')
-            im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
-            # im3 = ax3.imshow(np.abs(ezz_t_i-ezz_p_i)/ezz_t_i, cmap='jet', vmin=0, vmax=max_strerr_bar)
-            ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
+            # --- Column 3, Row 2: Error (Predicted) ---
+            error2 = np.abs((target_image - predicted_image2) / (target_image)) * 100
+            error2 = np.nan_to_num(error2, posinf=0, neginf=0)
+            ax6 = plt.subplot(gs[1, 2])
+            im6 = ax6.imshow(error2, cmap='jet', vmin=0, vmax=100)
+            ax6.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
             # --- added colorbar row 2 ---
-            divider6 = make_axes_locatable(ax3)
+            divider6 = make_axes_locatable(ax6)
             cax6 = divider6.append_axes("right", size="5%", pad=0.0)
-            cbar6 = plt.colorbar(im3, cax=cax6)
+            cbar6 = plt.colorbar(im6, cax=cax6)
             cbar6.set_ticks([10, 30, 50, 70, 90])
             cbar6.ax.yaxis.set_ticks_position("left")
             cbar6.ax.yaxis.set_label_position("left")
             cbar6.ax.tick_params(colors='white', labelsize=14)
-            # --- end added ---
-            ax3.axis('off')
 
             plt.tight_layout()  # Ensure plots don't overlap
             output_file = f"C:\\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\Strain_output_{i}.jpg"  # Specify the output file name
