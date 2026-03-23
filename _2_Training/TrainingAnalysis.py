@@ -643,7 +643,8 @@ class TrainingAnalysis:
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error without bone yield', fontsize=18)
         ax.tick_params(labelsize=16)
-        ax.set_ylim(0, 550)
+        ax.set_ylim(-10, 550)
+        ax.yaxis.set_major_locator(plt.MultipleLocator(100))
 
         plt.tight_layout()
 
@@ -704,7 +705,8 @@ class TrainingAnalysis:
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error with bone yield', fontsize=18)
         ax.tick_params(labelsize=16)
-        ax.set_ylim(top=350)
+        ax.set_ylim(-10, 550)
+        ax.yaxis.set_major_locator(plt.MultipleLocator(100))
 
         plt.tight_layout()
         output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_with_bone_yield.jpg"
