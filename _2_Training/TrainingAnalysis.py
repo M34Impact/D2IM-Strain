@@ -643,6 +643,7 @@ class TrainingAnalysis:
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error without bone yield', fontsize=18)
         ax.tick_params(labelsize=16)
+        ax.set_ylim(0, 550)
 
         plt.tight_layout()
 
@@ -703,6 +704,7 @@ class TrainingAnalysis:
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error with bone yield', fontsize=18)
         ax.tick_params(labelsize=16)
+        ax.set_ylim(0, 350)
 
         plt.tight_layout()
         output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_with_bone_yield.jpg"
@@ -739,7 +741,7 @@ class TrainingAnalysis:
 
             # Create a grid of subplots
             gs = gridspec.GridSpec(2, 4,
-                                   width_ratios=[1, 1, 1.08, 1])
+                                   width_ratios=[1, 1, 1.08, 1.08])
 
             # Plot the input image
             ax3 = plt.subplot(gs[0, 0])  # Fourth subplot
@@ -778,6 +780,14 @@ class TrainingAnalysis:
             im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
             # im3 = ax3.imshow(np.abs(ezz_t_i-ezz_p_i)/ezz_t_i, cmap='jet', vmin=0, vmax=max_strerr_bar)
             ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
+            # --- added colorbar row 1 ---
+            divider3 = make_axes_locatable(ax3)
+            cax3 = divider3.append_axes("right", size="5%", pad=0.0)
+            cbar3 = plt.colorbar(im3, cax=cax3)
+            cbar3.set_ticks([10, 30, 50, 70, 90])
+            cbar3.ax.yaxis.set_ticks_position("left")
+            cbar3.ax.yaxis.set_label_position("left")
+            cbar3.ax.tick_params(colors='white', labelsize=14)
 
             #### block 2
 
@@ -819,6 +829,15 @@ class TrainingAnalysis:
             im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
             # im3 = ax3.imshow(np.abs(ezz_t_i-ezz_p_i)/ezz_t_i, cmap='jet', vmin=0, vmax=max_strerr_bar)
             ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
+            # --- added colorbar row 2 ---
+            divider6 = make_axes_locatable(ax3)
+            cax6 = divider6.append_axes("right", size="5%", pad=0.0)
+            cbar6 = plt.colorbar(im3, cax=cax6)
+            cbar6.set_ticks([10, 30, 50, 70, 90])
+            cbar6.ax.yaxis.set_ticks_position("left")
+            cbar6.ax.yaxis.set_label_position("left")
+            cbar6.ax.tick_params(colors='white', labelsize=14)
+            # --- end added ---
             ax3.axis('off')
 
             plt.tight_layout()  # Ensure plots don't overlap
