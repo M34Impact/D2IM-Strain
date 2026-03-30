@@ -10,7 +10,7 @@ import tiffile as tiff
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, r2_score
 import seaborn as sns
-
+from scipy.stats import levene
 from _2_Training.DataSpilt import DataSplit
 
 
@@ -599,57 +599,68 @@ class TrainingAnalysis:
         predictions_model = np.where(self.mask_test.reshape(26, 400),
                                      (self.predictions * self.global_std + self.global_mean), 0.0)
 
-        # Relative error of displacement predictions
-
-        # Ensure all arrays have the same shape
         predicted_data_1 = predicted_data_D2IM.reshape(-1)
         predicted_data_2 = predictions_model.reshape(-1)
-
         target_data_str = target_data_ezz.reshape(-1)
 
-        # Create filters to exclude data points where either value is 0
         non_zero_filter_1 = (predicted_data_1 != 0) & (target_data_str != 0)
         non_zero_filter_2 = (predicted_data_2 != 0) & (target_data_str != 0)
 
-        # Apply the filters to both datasets
         predicted_data_1 = predicted_data_1[non_zero_filter_1]
         predicted_data_2 = predicted_data_2[non_zero_filter_2]
-
         target_data_1 = target_data_str[non_zero_filter_1]
         target_data_2 = target_data_str[non_zero_filter_2]
 
-        # Calculate relative errors
         relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
-        # Create a box and whisker plot for all relative errors on the same plot
-        fig, ax = plt.subplots(figsize=(8, 6))
+        # --- P-value calculation (Brown-Forsythe: robust for skewed data) ---
+        stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
+        print(f"Brown-Forsythe test: statistic={stat:.4f}, p={p_value:.2e}")
 
+        # Significance label
+        if p_value < 0.001:
+            sig_label = 'p < 0.001'
+        elif p_value < 0.01:
+            sig_label = f'p = {p_value:.4f}'
+        elif p_value < 0.05:
+            sig_label = f'p = {p_value:.4f}'
+        else:
+            sig_label = f'p = {p_value:.4f}'
+
+        fig, ax = plt.subplots(figsize=(8, 6))
         bp = ax.boxplot(
-            [relative_errors_1 * 100,
-             relative_errors_2 * 100],
+            [relative_errors_1 * 100, relative_errors_2 * 100],
             vert=True,
             showfliers=False,
             labels=['Displacement-Derived', 'Direct Strain'],
-            patch_artist=True,  # Color code the boxes
-            medianprops={'color': 'black'}  # Set median line color to black
+            patch_artist=True,
+            medianprops={'color': 'black'}
         )
 
-        # Color code the boxes
         colors = ['lightblue', 'lightgreen']
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
+        # --- Significance bracket ---
+        y_max = max(np.percentile(relative_errors_1 * 100, 75),
+                    np.percentile(relative_errors_2 * 100, 75))
+        y_bracket = y_max + 300  # bracket height above boxes
+        y_text = y_bracket + 15
+
+        ax.plot([1, 1, 2, 2], [y_bracket, y_bracket + 5, y_bracket + 5, y_bracket],
+                color='black', linewidth=1.2)
+        ax.text(1.5, y_text, sig_label, ha='center', va='bottom', fontsize=13)
+
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error without bone yield', fontsize=18)
         ax.tick_params(labelsize=16)
-        ax.set_ylim(-10, 550)
-        ax.yaxis.set_major_locator(plt.MultipleLocator(100))
-
+        ax.set_ylim(-10, 600)
+        ax.yaxis.set_major_locator(plt.MultipleLocator(150))
         plt.tight_layout()
 
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_without_bone_yield.jpg"  # Specify the output file name
-        plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_without_bone_yield.jpg"
+        plt.savefig(output_file, dpi=500)
         plt.show()
 
     def visualise_box_plot2(self):
@@ -684,33 +695,53 @@ class TrainingAnalysis:
         relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
-        # Create a box and whisker plot for all relative errors on the same plot
-        fig, ax = plt.subplots(figsize=(8, 6))
+        # --- P-value calculation (Brown-Forsythe: robust for skewed data) ---
+        stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
+        print(f"Brown-Forsythe test: statistic={stat:.4f}, p={p_value:.2e}")
 
+        # Significance label
+        if p_value < 0.001:
+            sig_label = 'p < 0.001'
+        elif p_value < 0.01:
+            sig_label = f'p = {p_value:.4f}'
+        elif p_value < 0.05:
+            sig_label = f'p = {p_value:.4f}'
+        else:
+            sig_label = f'p = {p_value:.4f}'
+
+        fig, ax = plt.subplots(figsize=(8, 6))
         bp = ax.boxplot(
-            [relative_errors_1 * 100,
-             relative_errors_2 * 100],
+            [relative_errors_1 * 100, relative_errors_2 * 100],
             vert=True,
             showfliers=False,
             labels=['Displacement-Derived', 'Direct Strain'],
-            patch_artist=True,  # Color code the boxes
-            medianprops={'color': 'black'}  # Set median line color to black
+            patch_artist=True,
+            medianprops={'color': 'black'}
         )
 
-        # Color code the boxes
         colors = ['lightblue', 'lightgreen']
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
+        # --- Significance bracket ---
+        y_max = max(np.percentile(relative_errors_1 * 100, 75),
+                    np.percentile(relative_errors_2 * 100, 75))
+        y_bracket = y_max + 150  # bracket height above boxes
+        y_text = y_bracket + 15
+
+        ax.plot([1, 1, 2, 2], [y_bracket, y_bracket + 5, y_bracket + 5, y_bracket],
+                color='black', linewidth=1.2)
+        ax.text(1.5, y_text, sig_label, ha='center', va='bottom', fontsize=13)
+
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error with bone yield', fontsize=18)
         ax.tick_params(labelsize=16)
-        ax.set_ylim(-10, 550)
-        ax.yaxis.set_major_locator(plt.MultipleLocator(100))
-
+        ax.set_ylim(-10, 600)
+        ax.yaxis.set_major_locator(plt.MultipleLocator(150))
         plt.tight_layout()
+
         output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_with_bone_yield.jpg"
-        plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
+        plt.savefig(output_file, dpi=500)
         plt.show()
 
     # Detailed plots with strain 4 cases used in paper
