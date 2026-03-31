@@ -614,9 +614,9 @@ class TrainingAnalysis:
         relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
-        # --- P-value calculation (Brown-Forsythe: robust for skewed data) ---
+        # --- P-value calculation Levene's test ---
         stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
-        print(f"Brown-Forsythe test: statistic={stat:.4f}, p={p_value:.2e}")
+        print(f"Levene test: statistic={stat:.4f}, p={p_value:.2e}")
 
         # Significance label
         if p_value < 0.001:
@@ -695,9 +695,9 @@ class TrainingAnalysis:
         relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
-        # --- P-value calculation (Brown-Forsythe: robust for skewed data) ---
+        # --- P-value calculation Levene's test ---
         stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
-        print(f"Brown-Forsythe test: statistic={stat:.4f}, p={p_value:.2e}")
+        print(f"Levene test: statistic={stat:.4f}, p={p_value:.2e}")
 
         # Significance label
         if p_value < 0.001:
