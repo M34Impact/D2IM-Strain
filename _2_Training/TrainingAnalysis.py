@@ -615,18 +615,24 @@ class TrainingAnalysis:
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
         # --- P-value calculation Levene's test ---
-        stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
+        cap = np.percentile(relative_errors_1 * 100, 95)
+        re1_capped = np.clip(relative_errors_1 * 100, 0, cap)
+        re2_capped = np.clip(relative_errors_2 * 100, 0, cap)
+        stat, p_value = levene(re1_capped, re2_capped, center='mean')
+        # stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
         print(f"Levene test: statistic={stat:.4f}, p={p_value:.2e}")
+        print(f"N1={len(relative_errors_1)}, N2={len(relative_errors_2)}")
+        print(f"Var1={np.var(relative_errors_1 * 100):.2f}, Var2={np.var(relative_errors_2 * 100):.2f}")
 
         # Significance label
         if p_value < 0.001:
             sig_label = 'p < 0.001'
         elif p_value < 0.01:
-            sig_label = f'p = {p_value:.4f}'
+            sig_label = f'p = {p_value:.3f}'
         elif p_value < 0.05:
-            sig_label = f'p = {p_value:.4f}'
+            sig_label = f'p = {p_value:.3f}'
         else:
-            sig_label = f'p = {p_value:.4f}'
+            sig_label = f'p = {p_value:.3f}'
 
         fig, ax = plt.subplots(figsize=(8, 6))
         bp = ax.boxplot(
@@ -696,18 +702,24 @@ class TrainingAnalysis:
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
         # --- P-value calculation Levene's test ---
-        stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
+        cap = np.percentile(relative_errors_1 * 100, 95)
+        re1_capped = np.clip(relative_errors_1 * 100, 0, cap)
+        re2_capped = np.clip(relative_errors_2 * 100, 0, cap)
+        stat, p_value = levene(re1_capped, re2_capped, center='mean')
+        # stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
         print(f"Levene test: statistic={stat:.4f}, p={p_value:.2e}")
+        print(f"N1={len(relative_errors_1)}, N2={len(relative_errors_2)}")
+        print(f"Var1={np.var(relative_errors_1 * 100):.2f}, Var2={np.var(relative_errors_2 * 100):.2f}")
 
         # Significance label
         if p_value < 0.001:
             sig_label = 'p < 0.001'
         elif p_value < 0.01:
-            sig_label = f'p = {p_value:.4f}'
+            sig_label = f'p = {p_value:.3f}'
         elif p_value < 0.05:
-            sig_label = f'p = {p_value:.4f}'
+            sig_label = f'p = {p_value:.3f}'
         else:
-            sig_label = f'p = {p_value:.4f}'
+            sig_label = f'p = {p_value:.3f}'
 
         fig, ax = plt.subplots(figsize=(8, 6))
         bp = ax.boxplot(
