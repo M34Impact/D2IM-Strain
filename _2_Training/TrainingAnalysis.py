@@ -10,7 +10,7 @@ import tiffile as tiff
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, r2_score
 import seaborn as sns
-from scipy.stats import levene
+from scipy.stats import mannwhitneyu
 from _2_Training.DataSpilt import DataSplit
 
 
@@ -614,21 +614,15 @@ class TrainingAnalysis:
         relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
-        # --- P-value calculation Levene's test ---
-        cap = np.percentile(relative_errors_1 * 100, 95)
-        re1_capped = np.clip(relative_errors_1 * 100, 0, cap)
-        re2_capped = np.clip(relative_errors_2 * 100, 0, cap)
-        stat, p_value = levene(re1_capped, re2_capped, center='mean')
-        # stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
-        print(f"Levene test: statistic={stat:.4f}, p={p_value:.2e}")
+        # --- P-value calculation Mann-Whitney U test ---
+        stat_u, p_value = mannwhitneyu(relative_errors_1 * 100, relative_errors_2 * 100, alternative='two-sided')
+        print(f"Mann-Whitney U test: statistic={stat_u:.4f}, p={p_value:.2e}")
         print(f"N1={len(relative_errors_1)}, N2={len(relative_errors_2)}")
         print(f"Var1={np.var(relative_errors_1 * 100):.2f}, Var2={np.var(relative_errors_2 * 100):.2f}")
 
-        # Significance label
-        if p_value < 0.001:
-            sig_label = 'p < 0.001'
-        elif p_value < 0.01:
-            sig_label = f'p = {p_value:.3f}'
+        # p label
+        if p_value < 0.01:
+            sig_label = 'p < 0.01'
         elif p_value < 0.05:
             sig_label = f'p = {p_value:.3f}'
         else:
@@ -648,7 +642,6 @@ class TrainingAnalysis:
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
-        # --- Significance bracket ---
         y_max = max(np.percentile(relative_errors_1 * 100, 75),
                     np.percentile(relative_errors_2 * 100, 75))
         y_bracket = y_max + 300  # bracket height above boxes
@@ -676,50 +669,29 @@ class TrainingAnalysis:
                                    (self.strain_test.reshape(26, 400) * self.global_std + self.global_mean), 0.0)
         predictions_model = np.where(self.mask_test.reshape(26, 400),
                                      (self.predictions * self.global_std + self.global_mean), 0.0)
-        # Relative error of displacement predictions
 
         high_value_filter = abs(target_data_ezz) > 10000
 
-        # Ensure all arrays have the same shape
         predicted_data_1 = predicted_data_D2IM[high_value_filter].reshape(-1)
         predicted_data_2 = predictions_model[high_value_filter].reshape(-1)
-
         target_data_str = target_data_ezz[high_value_filter].reshape(-1)
 
-        # Create filters to exclude data points where either value is 0
         non_zero_filter_1 = (predicted_data_1 != 0) & (target_data_str != 0)
         non_zero_filter_2 = (predicted_data_2 != 0) & (target_data_str != 0)
 
-        # Apply the filters to both datasets
         predicted_data_1 = predicted_data_1[non_zero_filter_1]
         predicted_data_2 = predicted_data_2[non_zero_filter_2]
-
         target_data_1 = target_data_str[non_zero_filter_1]
         target_data_2 = target_data_str[non_zero_filter_2]
 
-        # Calculate relative errors
         relative_errors_1 = np.abs((predicted_data_1 - target_data_1) / target_data_1)
         relative_errors_2 = np.abs((predicted_data_2 - target_data_2) / target_data_2)
 
-        # --- P-value calculation Levene's test ---
-        cap = np.percentile(relative_errors_1 * 100, 95)
-        re1_capped = np.clip(relative_errors_1 * 100, 0, cap)
-        re2_capped = np.clip(relative_errors_2 * 100, 0, cap)
-        stat, p_value = levene(re1_capped, re2_capped, center='mean')
-        # stat, p_value = levene(relative_errors_1 * 100, relative_errors_2 * 100, center='mean')
-        print(f"Levene test: statistic={stat:.4f}, p={p_value:.2e}")
+        # --- P-value calculation Mann-Whitney U test (printed only) ---
+        stat_u, p_value = mannwhitneyu(relative_errors_1 * 100, relative_errors_2 * 100, alternative='two-sided')
+        print(f"Mann-Whitney U test: statistic={stat_u:.4f}, p={p_value:.2e}")
         print(f"N1={len(relative_errors_1)}, N2={len(relative_errors_2)}")
         print(f"Var1={np.var(relative_errors_1 * 100):.2f}, Var2={np.var(relative_errors_2 * 100):.2f}")
-
-        # Significance label
-        if p_value < 0.001:
-            sig_label = 'p < 0.001'
-        elif p_value < 0.01:
-            sig_label = f'p = {p_value:.3f}'
-        elif p_value < 0.05:
-            sig_label = f'p = {p_value:.3f}'
-        else:
-            sig_label = f'p = {p_value:.3f}'
 
         fig, ax = plt.subplots(figsize=(8, 6))
         bp = ax.boxplot(
@@ -734,16 +706,6 @@ class TrainingAnalysis:
         colors = ['lightblue', 'lightgreen']
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
-
-        # --- Significance bracket ---
-        y_max = max(np.percentile(relative_errors_1 * 100, 75),
-                    np.percentile(relative_errors_2 * 100, 75))
-        y_bracket = y_max + 150  # bracket height above boxes
-        y_text = y_bracket + 15
-
-        ax.plot([1, 1, 2, 2], [y_bracket, y_bracket + 5, y_bracket + 5, y_bracket],
-                color='black', linewidth=1.2)
-        ax.text(1.5, y_text, sig_label, ha='center', va='bottom', fontsize=13)
 
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error with bone yield', fontsize=18)
