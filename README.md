@@ -1,6 +1,6 @@
 # D²IM-Strain
 
-A deep learning framework for direct strain field prediction in bone from undeformed X-ray computed tomography (XCT) images, extending the original [D²IM](https://github.com/M34Impact/D2IM) framework.
+A deep learning framework for direct strain field prediction in bone from undeformed X-ray computed tomography (XCT) images, extending the original [D²IM](https://github.com/PeterSoar/D2IM_Prototype) framework.
 
 For full details, please cite the following paper if using this code or data:
 
