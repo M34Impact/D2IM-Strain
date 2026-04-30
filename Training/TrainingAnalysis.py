@@ -264,7 +264,7 @@ class TrainingAnalysis:
         create_confusion_matrix(predictions_model, target_data_ezz, ax=axs[1], title="Direct Strain")
 
         plt.tight_layout()
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\confusion_matrix.jpg"  # Specify the output file name
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\confusion_matrix.jpg"  # Specify the output file name
         plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
         plt.show()
 
@@ -511,7 +511,7 @@ class TrainingAnalysis:
             handle.set_alpha(1.0)   # Set the opacity of the points
 
         plt.tight_layout()
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\correlation_legend.jpg"
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\correlation_legend.jpg"
         plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
         plt.show()
 
@@ -587,7 +587,7 @@ class TrainingAnalysis:
             handle.set_alpha(1.0)  # Set the opacity of the points
 
         plt.tight_layout()
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\correlation_10K.jpg"
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\correlation_10K.jpg"
         plt.savefig(output_file, dpi=500, bbox_inches='tight')  # dpi controls the resolution (dots per inch)
         plt.show()
 
@@ -658,7 +658,7 @@ class TrainingAnalysis:
         ax.yaxis.set_major_locator(plt.MultipleLocator(150))
         plt.tight_layout()
 
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_without_bone_yield.jpg"
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\box_error_without_bone_yield.jpg"
         plt.savefig(output_file, dpi=500)
         plt.show()
 
@@ -714,7 +714,7 @@ class TrainingAnalysis:
         ax.yaxis.set_major_locator(plt.MultipleLocator(150))
         plt.tight_layout()
 
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\box_error_with_bone_yield.jpg"
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\box_error_with_bone_yield.jpg"
         plt.savefig(output_file, dpi=500)
         plt.show()
 
@@ -818,7 +818,7 @@ class TrainingAnalysis:
             cbar6.ax.tick_params(colors='white', labelsize=14)
 
             plt.tight_layout()  # Ensure plots don't overlap
-            output_file = f"C:\\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\Strain_output_{i}.jpg"  # Specify the output file name
+            output_file = f"C:\\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\Strain_output_{i}.jpg"  # Specify the output file name
             plt.savefig(output_file, dpi=500)  # dpi controls the resolution (dots per inch)
             plt.show()
 
@@ -934,7 +934,7 @@ class TrainingAnalysis:
         cbar.set_label('Error (%)', fontsize=20)
         cbar.ax.tick_params(labelsize=15)
 
-        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\_4_Figure\Strain_comparison_highlighted.jpg"
+        output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\Strain_comparison_highlighted.jpg"
         plt.savefig(output_file, dpi=500, bbox_inches='tight')
         plt.show()
 
