@@ -136,12 +136,7 @@ Install dependencies with:
 pip install -r requirements.txt
 ```
 
-Key dependencies include Python, TensorFlow/Keras, NumPy, SciPy, Matplotlib, scikit-learn, seaborn, tifffile, and natsort. SPAM is required for DVC ground-truth generation only: https://www.spam-project.dev/
-
-> **Note:** `natsort` is not included in `requirements.txt` and must be installed separately:
-> ```bash
-> pip install natsort
-> ```
+Key dependencies include Python, TensorFlow/Keras, NumPy, SciPy, Matplotlib, scikit-learn, seaborn, and tifffile. SPAM is required for DVC ground-truth generation only: https://www.spam-project.dev/
 
 ---
 
