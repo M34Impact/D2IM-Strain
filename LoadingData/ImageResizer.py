@@ -3,9 +3,9 @@ from LoadingData.FolderImageLoader import FolderImageLoader
 import re
 
 class ImageResizer:
-    trainPath = '../data/Input/Scan'
-    maskPath = '../data/Input/Mask'
-    testPathW = '../data/Target/W'
+    trainPath = 'Data/Input/Scan'
+    maskPath = 'Data/Input/Mask'
+    testPathW = 'Data/Target/W'
     folderPaths = [trainPath, maskPath, testPathW]
     allLoaders = []
 

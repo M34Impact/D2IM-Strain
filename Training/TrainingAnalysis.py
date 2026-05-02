@@ -91,9 +91,9 @@ class TrainingAnalysis:
         # Reimport scan data to get mappings to label each image with the vertebra
         # Define directory paths
 
-        trainPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Input\Scan"
-        maskPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Input\Mask"
-        testPathW = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Target\W"
+        trainPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Data\Input\Scan"
+        maskPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Data\Input\Mask"
+        testPathW = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Data\Target\W"
 
         # Define function to import images
         def import_images_label(folder_path, name):
@@ -381,9 +381,9 @@ class TrainingAnalysis:
 
     # Create a coloured correlation analysis with legend
     def visualise_correlation_legend(self):
-        trainPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Input\Scan"
-        maskPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Input\Mask"
-        testPathW = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\data\Target\W"
+        trainPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Data\Input\Scan"
+        maskPath = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Data\Input\Mask"
+        testPathW = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Data\Target\W"
 
         # Define function to import images
         def import_images_label(folder_path, name):
