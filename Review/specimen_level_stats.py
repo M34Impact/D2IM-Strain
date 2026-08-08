@@ -81,21 +81,34 @@ def relative_error(target, predicted):
     return np.nan_to_num(err, posinf=0, neginf=0)
 
 
-def paired_report(label, specimens, derived, direct):
-    """Paired test across specimens, with the sign test as a small-n backstop."""
-    d = np.array(derived) - np.array(direct)
+def summarise(vals):
+    """Peter asked for average, standard deviation and max alongside the median."""
+    return {"n": vals.size, "mean": float(np.mean(vals)), "sd": float(np.std(vals)),
+            "median": float(np.median(vals)), "max": float(np.max(vals))}
+
+
+def paired_report(label, units, derived, direct, unit_name="specimen"):
+    """Paired test across units, with the sign test as a small-n backstop."""
+    dv = np.array([s["median"] for s in derived])
+    dr = np.array([s["median"] for s in direct])
+    d = dv - dr
     n = len(d)
     better = int(np.sum(d > 0))
     print(f"\n{label}")
-    print("-" * 74)
-    print(f"{'specimen':<14}{'derived':>12}{'direct':>12}{'difference':>14}")
-    print("-" * 74)
-    for s, a, b in zip(specimens, derived, direct):
-        print(f"{s:<14}{a:>12.1f}{b:>12.1f}{a - b:>14.1f}")
-    print("-" * 74)
-    print(f"n specimens = {n};  direct lower in {better}/{n}")
+    print("-" * 96)
+    print(f"{unit_name:<12}{'windows':>9}"
+          f"{'derived med':>13}{'direct med':>12}{'diff':>9}"
+          f"{'derived mean':>14}{'direct mean':>13}"
+          f"{'derived max':>13}{'direct max':>12}")
+    print("-" * 96)
+    for u, a, b in zip(units, derived, direct):
+        print(f"{u:<12}{a['n']:>9}{a['median']:>13.1f}{b['median']:>12.1f}"
+              f"{a['median'] - b['median']:>9.1f}"
+              f"{a['mean']:>14.1f}{b['mean']:>13.1f}{a['max']:>13.1f}{b['max']:>12.1f}")
+    print("-" * 96)
+    print(f"n {unit_name}s = {n};  direct lower in {better}/{n}")
     if n >= 3 and np.any(d != 0):
-        stat, p = wilcoxon(derived, direct)
+        stat, p = wilcoxon(dv, dr)
         print(f"Wilcoxon signed-rank: W = {stat:.1f}, p = {p:.4f}")
     else:
         print("Wilcoxon signed-rank: not computable at this sample size")
@@ -136,10 +149,23 @@ if __name__ == "__main__":
 
     index = {s: i for i, s in enumerate(stems)}
 
-    # Group the test slices by specimen, pooling all their bone windows.
-    by_specimen = {}
-    for s in test_stems:
-        by_specimen.setdefault(s.split("_")[0], []).append(index[s])
+    # Two ways of grouping the test slices.
+    #
+    #   specimen: the ten labels S1..S10, treating the intact and lesioned scans
+    #             as distinct units. This is the grouping Peter proposed.
+    #   vertebra: the five physical bones. Labels alternate INT/LES, so S1 and S2
+    #             are the same vertebra before and after drilling and are not
+    #             independent of one another. This is the stricter reading, and
+    #             the one the reviewer's argument points towards.
+    def vertebra_of(stem):
+        return f"V{(int(stem.split('_')[0][1:]) + 1) // 2}"
+
+    groupings = {
+        "specimen (S1..S10, intact and lesioned treated separately)":
+            ("specimen", lambda s: s.split("_")[0], lambda k: int(k[1:])),
+        "vertebra (five physical bones, intact and lesioned pooled)":
+            ("vertebra", vertebra_of, lambda k: int(k[1:])),
+    }
 
     regimes = {
         "All bone windows": lambda t: np.ones_like(t, dtype=bool),
@@ -147,24 +173,30 @@ if __name__ == "__main__":
         f"At or above yield (|ezz| >= {YIELD_THRESHOLD} ue)": lambda t: np.abs(t) >= YIELD_THRESHOLD,
     }
 
-    for label, regime in regimes.items():
-        specimens, dv, dr = [], [], []
-        for spec in sorted(by_specimen, key=lambda x: int(x[1:])):
-            e_dv, e_dr = [], []
-            for i in by_specimen[spec]:
-                t = target[i]
-                valid = mask_flat[i].astype(bool) & (t != 0) & regime(t)
-                if not valid.any():
+    for gl, (unit_name, key_of, order) in groupings.items():
+        print(f"\n\n{'#' * 96}\nGrouped by {gl}\n{'#' * 96}")
+        groups = {}
+        for s in test_stems:
+            groups.setdefault(key_of(s), []).append(index[s])
+
+        for label, regime in regimes.items():
+            units, dv, dr = [], [], []
+            for key in sorted(groups, key=order):
+                e_dv, e_dr = [], []
+                for i in groups[key]:
+                    t = target[i]
+                    valid = mask_flat[i].astype(bool) & (t != 0) & regime(t)
+                    if not valid.any():
+                        continue
+                    e_dv.append(relative_error(t, derived[i])[valid])
+                    e_dr.append(relative_error(t, direct[i])[valid])
+                if not e_dv:
                     continue
-                e_dv.append(relative_error(t, derived[i])[valid])
-                e_dr.append(relative_error(t, direct[i])[valid])
-            if not e_dv:
-                continue
-            specimens.append(spec)
-            dv.append(float(np.median(np.concatenate(e_dv))))
-            dr.append(float(np.median(np.concatenate(e_dr))))
-        if len(specimens) >= 2:
-            paired_report(f"{label}: median relative error (%) per specimen",
-                          specimens, dv, dr)
-        else:
-            print(f"\n{label}: too few specimens with data in this regime")
+                units.append(key)
+                dv.append(summarise(np.concatenate(e_dv)))
+                dr.append(summarise(np.concatenate(e_dr)))
+            if len(units) >= 2:
+                paired_report(f"{label}: relative error (%) per {unit_name}",
+                              units, dv, dr, unit_name)
+            else:
+                print(f"\n{label}: too few {unit_name}s with data in this regime")
