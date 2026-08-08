@@ -88,3 +88,6 @@ docs/_build/
 # Mypy cache
 .mypy_cache/
 *.h5
+
+# Paper drafts (kept local only)
+MyPaper/
