@@ -1,16 +1,31 @@
 """
-Summary statistics of the relative strain error for the two cases shown in Figure 3.
+Summary statistics of the relative strain error, per slice.
 
 Addresses Reviewer 1, Comment 3: provides a quantitative comparison of the
-displacement-derived (D2IM) and directly predicted (D2IM-Strain) strain fields.
+displacement-derived (D2IM) and directly predicted (D2IM-Strain) strain fields
+for the two cases shown in Figure 3.
 
 Run from anywhere:
     python Review/figure3_error_stats.py
+    python Review/figure3_error_stats.py --cases S5_INT_UL_ML_50_0007 S8_LES_UL_ML_50_0010
 
-Figure 3 corresponds to test indices 3 and 9, as set by `plot_num` in
-TrainingAnalysis.visualise_strain().
+Notes on why this does not simply reuse the Main.py pipeline:
+
+1. The three data folders are not the same size (Scan 251, Mask 419, W 413).
+   Main.py pairs them by list position, which only works if all three folders
+   hold exactly the same files. Here the Scan folder is a strict subset of the
+   other two, so this script pairs them by filename instead and keeps the 251
+   samples common to all three.
+
+2. FolderImageLoader globs without sorting, so list order is not reproducible
+   across machines. Because the train/val/test split is a shuffle of that list,
+   the published split cannot be reconstructed reliably. Statistics for a named
+   slice do not depend on the split, so this script reports per-slice results
+   keyed by filename and writes the full table to CSV.
 """
 
+import argparse
+import csv
 import os
 import sys
 from pathlib import Path
@@ -24,19 +39,52 @@ os.chdir(PROJECT_ROOT)
 
 import numpy as np
 import tensorflow as tf
+from scipy.ndimage import zoom
 
-from LoadingData.ImageResizer import ImageResizer
+# The project code imports `tiffile`, which is a shim for `tifffile`; only the
+# latter is pinned in requirements.txt, so accept whichever is installed.
+try:
+    import tifffile as tiff
+except ImportError:
+    import tiffile as tiff
+
 from DataProcessing.Masking import Masking
 from DataProcessing.Strain import Strain
 from Training.DataSpilt import DataSplit
 
-# Test indices plotted in Figure 3 (see TrainingAnalysis.visualise_strain)
-FIG3_INDICES = [9, 3]  # 9 = Fig 3A (intact), 3 = Fig 3B (lesioned)
-
-NODE_SPACING = 50  # Node spacing, as used in Strain and DisplacementModel
+SCAN_DIR = PROJECT_ROOT / "Data" / "Input" / "Scan"
+MASK_DIR = PROJECT_ROOT / "Data" / "Input" / "Mask"
+W_DIR = PROJECT_ROOT / "Data" / "Target" / "W"
 
 DISPLACEMENT_MODEL = PROJECT_ROOT / "Main" / "D2IM_trained.h5"
 DIRECT_MODEL = PROJECT_ROOT / "Main" / "M1_best.h5"
+
+CSV_OUT = PROJECT_ROOT / "Review" / "figure3_error_stats.csv"
+
+NODE_SPACING = 50  # Node spacing, as used in Strain and DisplacementModel
+
+# Best guess at the two cases in Figure 3: one intact, one lesioned.
+# Override with --cases once the filenames are confirmed against the figure.
+DEFAULT_CASES = ["S5_INT_UL_ML_50_0007", "S8_LES_UL_ML_50_0010"]
+
+
+def aligned_stems():
+    """Filenames (without extension) present in all three folders, ordered."""
+    stems = [{p.stem for p in d.glob("*.tif")} for d in (SCAN_DIR, MASK_DIR, W_DIR)]
+    common = stems[0] & stems[1] & stems[2]
+    # Plain sort: results are keyed by filename, so only reproducibility matters.
+    return sorted(common)
+
+
+def load_stack(folder, stems, size):
+    """Load and resize a stack of slices, matching LoadingData.ImageLoader."""
+    images = []
+    for stem in stems:
+        img = tiff.imread(str(folder / f"{stem}.tif"))
+        img[np.isnan(img)] = 0
+        images.append(zoom(img, (size / img.shape[0], size / img.shape[1]),
+                           mode="nearest", order=0))
+    return np.array(images)
 
 
 def relative_error(target, predicted):
@@ -48,13 +96,15 @@ def relative_error(target, predicted):
 def summarise(error, valid):
     """Summary statistics over the valid (bone, non-zero target) cells only."""
     vals = error[valid]
+    if vals.size == 0:
+        return {k: float("nan") for k in ("n", "mean", "sd", "median", "p95", "max")}
     return {
         "n": vals.size,
-        "mean": np.mean(vals),
-        "sd": np.std(vals),
-        "median": np.median(vals),
-        "p95": np.percentile(vals, 95),
-        "max": np.max(vals),
+        "mean": float(np.mean(vals)),
+        "sd": float(np.std(vals)),
+        "median": float(np.median(vals)),
+        "p95": float(np.percentile(vals, 95)),
+        "max": float(np.max(vals)),
     }
 
 
@@ -70,21 +120,29 @@ def print_table(title, rows):
 
 
 if __name__ == "__main__":
-    # ---- Load and resize, exactly as in Main.py -------------------------------
-    resizer = ImageResizer()
-    all_loaders = resizer.get_resized_loaders()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--cases", nargs=2, default=DEFAULT_CASES,
+                        metavar=("FIG3A", "FIG3B"),
+                        help="filenames (without .tif) of the two Figure 3 cases")
+    args = parser.parse_args()
 
-    scan_array = np.array([il.image for il in all_loaders[0].images]) / 255
-    mask_array = [il.image for il in all_loaders[1].images]
-    input_w_array = [il.image for il in all_loaders[2].images]
-    scan_filenames = [il.metadata["filename"] for il in all_loaders[0].images]
+    # ---- Build a filename-aligned dataset ------------------------------------
+    stems = aligned_stems()
+    print(f"Scan {len(list(SCAN_DIR.glob('*.tif')))}, "
+          f"Mask {len(list(MASK_DIR.glob('*.tif')))}, "
+          f"W {len(list(W_DIR.glob('*.tif')))} files; "
+          f"{len(stems)} common to all three and used here.")
+
+    scan_array = load_stack(SCAN_DIR, stems, 256) / 255
+    mask_array = load_stack(MASK_DIR, stems, 20)
+    w_array = load_stack(W_DIR, stems, 20)
 
     mask_obj = Masking(mask_array)
     be_mask = mask_obj.get_binary_erosion_mask()
     bd_mask = mask_obj.get_binary_dilation_mask()
 
     # ---- Ground-truth strain in microstrain ----------------------------------
-    strain_obj = Strain(be_mask, input_w_array)
+    strain_obj = Strain(be_mask, w_array)
     global_mean_S, global_std_S = strain_obj.global_mean, strain_obj.global_std
 
     # ---- Displacement-derived strain (D2IM) ----------------------------------
@@ -99,7 +157,7 @@ if __name__ == "__main__":
 
     # DisplacementModel standardises the derived field by its OWN mean/std,
     # but TrainingAnalysis de-standardises it with the target's mean/std.
-    # Both variants are reported below so the effect can be judged.
+    # Both variants are reported so the effect of that mismatch can be judged.
     global_mean_D, global_std_D = np.mean(derived_ezz), np.std(derived_ezz)
     standardized_pezz = np.where(be_mask, (derived_ezz - global_mean_D) / global_std_D, 0.0)
 
@@ -107,59 +165,73 @@ if __name__ == "__main__":
     print(f"derived strain: mean={global_mean_D:.2f}, std={global_std_D:.2f}")
     print(f"scale factor applied by the as-published path: {global_std_S / global_std_D:.4f}")
 
-    # ---- Split, exactly as in Main.py ----------------------------------------
-    _, _, scan_test = DataSplit(scan_array).split_data()
-    _, _, mask_test = DataSplit(be_mask).split_data()
-    _, _, strain_test = DataSplit(strain_obj.standardized_ezz).split_data()
-    _, _, derived_raw_test = DataSplit(derived_ezz).split_data()
-    _, _, pezz_test = DataSplit(standardized_pezz).split_data()
-    _, _, filenames_test = DataSplit(scan_filenames).split_data()
-
     # ---- Direct strain prediction (D2IM-Strain) ------------------------------
     direct_model = tf.keras.models.load_model(DIRECT_MODEL)
-    n = scan_test.shape[0]
-    input_scan = scan_test.reshape(n, scan_test.shape[1], scan_test.shape[2], 1)
-    input_mask = mask_test.reshape(n, mask_test.shape[1], mask_test.shape[2], 1)
+    n = scan_array.shape[0]
+    input_scan = scan_array.reshape(n, scan_array.shape[1], scan_array.shape[2], 1)
+    input_mask = be_mask.reshape(n, be_mask.shape[1], be_mask.shape[2], 1)
     direct_predictions = direct_model.predict([input_scan, input_mask])
 
-    # ---- De-standardise back to microstrain ----------------------------------
-    mask_flat = mask_test.reshape(n, 400)
-    target = np.where(mask_flat, strain_test.reshape(n, 400) * global_std_S + global_mean_S, 0.0)
+    # ---- Fields in microstrain, flattened to one row per slice ---------------
+    mask_flat = be_mask.reshape(n, 400)
+    target = np.where(mask_flat, strain_obj.standardized_ezz.reshape(n, 400)
+                      * global_std_S + global_mean_S, 0.0)
     direct = np.where(mask_flat, direct_predictions * global_std_S + global_mean_S, 0.0)
-
-    # As published: derived field de-standardised with the TARGET's mean/std
     derived_as_published = np.where(
-        mask_flat, pezz_test.reshape(n, 400) * global_std_S + global_mean_S, 0.0)
+        mask_flat, standardized_pezz.reshape(n, 400) * global_std_S + global_mean_S, 0.0)
+    derived_corrected = np.where(mask_flat, derived_ezz.reshape(n, 400), 0.0)
 
-    # Corrected: derived field left in its own physical units
-    derived_corrected = np.where(mask_flat, derived_raw_test.reshape(n, 400), 0.0)
+    # ---- Which slices land in the test split under this ordering -------------
+    # Indicative only: the published split used an unsorted glob order that
+    # cannot be reproduced, so treat this as a cross-check, not ground truth.
+    _, _, test_stems = DataSplit(list(stems)).split_data()
+    test_set = set(test_stems)
 
-    # ---- Statistics for the two Figure 3 cases -------------------------------
-    for idx in FIG3_INDICES:
-        panel = "Fig 3A" if idx == 9 else "Fig 3B"
-        lesion = "LESION" if "LES" in filenames_test[idx].upper() else "intact"
+    # ---- Per-slice statistics, written to CSV --------------------------------
+    variants = {
+        "derived_as_published": derived_as_published,
+        "derived_corrected": derived_corrected,
+        "direct": direct,
+    }
+    metrics = ("n", "mean", "sd", "median", "p95", "max")
+
+    with open(CSV_OUT, "w", newline="") as fh:
+        writer = csv.writer(fh)
+        header = ["filename", "specimen", "lesion", "orientation", "in_test_split"]
+        for name in variants:
+            header += [f"{name}_{m}" for m in metrics]
+        writer.writerow(header)
+
+        per_slice = {}
+        for i, stem in enumerate(stems):
+            parts = stem.split("_")
+            t = target[i]
+            valid = mask_flat[i].astype(bool) & (t != 0)
+
+            stats = {name: summarise(relative_error(t, field[i]), valid)
+                     for name, field in variants.items()}
+            per_slice[stem] = stats
+
+            row = [stem, parts[0], parts[1], parts[3], stem in test_set]
+            for name in variants:
+                row += [stats[name][m] for m in metrics]
+            writer.writerow(row)
+
+    print(f"\nPer-slice statistics for all {n} slices written to {CSV_OUT}")
+
+    # ---- The two Figure 3 cases ----------------------------------------------
+    for label, stem in zip(("Fig 3A", "Fig 3B"), args.cases):
         print(f"\n\n{'=' * 78}")
-        print(f"{panel}  |  test index {idx}  |  {filenames_test[idx]}  ({lesion})")
+        if stem not in per_slice:
+            print(f"{label}: '{stem}' not found. Pick from the CSV, or pass --cases.")
+            print("=" * 78)
+            continue
+
+        lesion = "LESION" if "_LES_" in stem else "intact"
+        where = "in test split" if stem in test_set else "NOT in test split"
+        print(f"{label}  |  {stem}  ({lesion}, {where})")
         print("=" * 78)
-
-        t = target[idx]
-        # Restrict to bone cells with a non-zero target, so the background
-        # (which is identically zero) does not dilute the statistics.
-        valid = mask_flat[idx].astype(bool) & (t != 0)
-
-        rows = [
-            ("derived (as published)", summarise(relative_error(t, derived_as_published[idx]), valid)),
-            ("derived (corrected)", summarise(relative_error(t, derived_corrected[idx]), valid)),
-            ("direct (D2IM-Strain)", summarise(relative_error(t, direct[idx]), valid)),
-        ]
-        print_table("Relative strain error (%), bone cells only", rows)
-
-        # Full-field figures, including background, for comparison with the
-        # error maps in Figure 3, which are computed over the whole 20x20 grid.
-        all_cells = np.ones_like(t, dtype=bool)
-        rows_full = [
-            ("derived (as published)", summarise(relative_error(t, derived_as_published[idx]), all_cells)),
-            ("derived (corrected)", summarise(relative_error(t, derived_corrected[idx]), all_cells)),
-            ("direct (D2IM-Strain)", summarise(relative_error(t, direct[idx]), all_cells)),
-        ]
-        print_table("Relative strain error (%), full 20x20 field (as plotted)", rows_full)
+        print_table("Relative strain error (%), bone cells only",
+                    [("derived (as published)", per_slice[stem]["derived_as_published"]),
+                     ("derived (corrected)", per_slice[stem]["derived_corrected"]),
+                     ("direct (D2IM-Strain)", per_slice[stem]["direct"])])
