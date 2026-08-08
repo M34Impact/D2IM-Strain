@@ -26,6 +26,7 @@ Notes on why this does not simply reuse the Main.py pipeline:
 
 import argparse
 import csv
+import glob
 import os
 import sys
 from pathlib import Path
@@ -63,9 +64,29 @@ CSV_OUT = PROJECT_ROOT / "Review" / "figure3_error_stats.csv"
 
 NODE_SPACING = 50  # Node spacing, as used in Strain and DisplacementModel
 
-# Best guess at the two cases in Figure 3: one intact, one lesioned.
-# Override with --cases once the filenames are confirmed against the figure.
-DEFAULT_CASES = ["S5_INT_UL_ML_50_0007", "S8_LES_UL_ML_50_0010"]
+# Test-set positions plotted as Figure 3, from `plot_num` in
+# TrainingAnalysis.visualise_strain(). Resolved to filenames below.
+FIG3_TEST_INDICES = [9, 3]  # 9 = Fig 3A (intact), 3 = Fig 3B (lesioned)
+
+
+def legacy_order_cases():
+    """
+    Resolve the Figure 3 test indices to filenames using the file order that
+    produced the published figures.
+
+    FolderImageLoader collects files by globbing each supported extension in
+    turn and never sorts, so the order is whatever the filesystem returns.
+    That is not portable between machines, but it is reproducible on the
+    machine the figures were generated on, which is what matters here.
+    """
+    extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.gif', '.webp'}
+    files = []
+    for ext in extensions:
+        files.extend(glob.glob(os.path.join(str(SCAN_DIR), f'*{ext}')))
+    stems = [Path(f).stem for f in files]
+
+    _, _, test = DataSplit(stems).split_data()
+    return [test[i] if i < len(test) else None for i in FIG3_TEST_INDICES]
 
 
 def aligned_stems():
@@ -121,10 +142,18 @@ def print_table(title, rows):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--cases", nargs=2, default=DEFAULT_CASES,
+    parser.add_argument("--cases", nargs=2, default=None,
                         metavar=("FIG3A", "FIG3B"),
-                        help="filenames (without .tif) of the two Figure 3 cases")
+                        help="filenames (without .tif) of the two Figure 3 cases; "
+                             "defaults to resolving them from the original file order")
     args = parser.parse_args()
+
+    cases = args.cases or legacy_order_cases()
+    source = "given on the command line" if args.cases else \
+             "resolved from the original file order (test indices 9 and 3)"
+    print(f"Figure 3 cases {source}:")
+    for label, stem in zip(("Fig 3A", "Fig 3B"), cases):
+        print(f"  {label}: {stem}")
 
     # ---- Build a filename-aligned dataset ------------------------------------
     stems = aligned_stems()
@@ -220,7 +249,7 @@ if __name__ == "__main__":
     print(f"\nPer-slice statistics for all {n} slices written to {CSV_OUT}")
 
     # ---- The two Figure 3 cases ----------------------------------------------
-    for label, stem in zip(("Fig 3A", "Fig 3B"), args.cases):
+    for label, stem in zip(("Fig 3A", "Fig 3B"), cases):
         print(f"\n\n{'=' * 78}")
         if stem not in per_slice:
             print(f"{label}: '{stem}' not found. Pick from the CSV, or pass --cases.")
