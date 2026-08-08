@@ -65,8 +65,9 @@ CSV_OUT = PROJECT_ROOT / "Review" / "figure3_error_stats.csv"
 NODE_SPACING = 50  # Node spacing, as used in Strain and DisplacementModel
 
 # Test-set positions plotted as Figure 3, from `plot_num` in
-# TrainingAnalysis.visualise_strain(). Resolved to filenames below.
-FIG3_TEST_INDICES = [9, 3]  # 9 = Fig 3A (intact), 3 = Fig 3B (lesioned)
+# TrainingAnalysis.visualise_strain(). That loop runs in list order, so index 3
+# is drawn first and is panel A. Resolved to filenames below.
+FIG3_TEST_INDICES = [3, 9]  # 3 = Fig 3A (intact), 9 = Fig 3B (lesioned)
 
 
 def legacy_order_cases():
