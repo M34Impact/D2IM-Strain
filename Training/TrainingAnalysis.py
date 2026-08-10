@@ -620,13 +620,11 @@ class TrainingAnalysis:
         print(f"N1={len(relative_errors_1)}, N2={len(relative_errors_2)}")
         print(f"Var1={np.var(relative_errors_1 * 100):.2f}, Var2={np.var(relative_errors_2 * 100):.2f}")
 
-        # p label
-        if p_value < 0.01:
-            sig_label = 'p < 0.01'
-        elif p_value < 0.05:
-            sig_label = f'p = {p_value:.3f}'
-        else:
-            sig_label = f'p = {p_value:.3f}'
+        # The Mann-Whitney result above is printed for reference only. It treats
+        # each DVC window as an independent observation, which inflates the
+        # effective sample size, so it is no longer annotated on the figure.
+        # The specimen-level paired test reported in the text is the basis for
+        # the significance claim (see Review/specimen_level_stats.py).
 
         fig, ax = plt.subplots(figsize=(8, 6))
         bp = ax.boxplot(
@@ -641,15 +639,6 @@ class TrainingAnalysis:
         colors = ['lightblue', 'lightgreen']
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
-
-        y_max = max(np.percentile(relative_errors_1 * 100, 75),
-                    np.percentile(relative_errors_2 * 100, 75))
-        y_bracket = y_max + 300  # bracket height above boxes
-        y_text = y_bracket + 15
-
-        ax.plot([1, 1, 2, 2], [y_bracket, y_bracket + 5, y_bracket + 5, y_bracket],
-                color='black', linewidth=1.2)
-        ax.text(1.5, y_text, sig_label, ha='center', va='bottom', fontsize=13)
 
         ax.set_ylabel('Strain Error (%)', fontsize=16)
         ax.set_title('Relative Error without bone yield', fontsize=18)
