@@ -183,33 +183,66 @@ if __name__ == "__main__":
     print(f"(a) Figure 3B, relative error near the lesion   [{fig3b}]")
     print("=" * 82)
 
-    i = index[fig3b]
-    bone = be_mask[i].astype(bool)
-    cavity = binary_fill_holes(bone) & ~bone           # interior hole = drilled defect
-    if not cavity.any():
-        print("No interior cavity found in the eroded mask for this slice.")
-        print("The defect may touch the outer boundary; pass --fig3b to try another case.")
-    else:
-        ring = binary_dilation(cavity, iterations=LESION_RING_ITERATIONS) & bone
-        distal = bone & ~ring
-        t = target[i]
-        print(f"cavity windows={int(cavity.sum())}, "
-              f"lesion-proximal bone windows={int(ring.sum())}, "
-              f"distal bone windows={int(distal.sum())}\n")
-        print(f"{'field':<24}{'proximal med':>14}{'distal med':>13}"
-              f"{'difference':>13}{'proximal p95':>14}")
-        print("-" * 82)
+    def find_cavity(idx):
+        """
+        Recover the drilled defect as an enclosed hole in the bone mask.
+
+        The masks are natively 20x20, so a 5 mm cavity spans only two or three
+        windows. be_mask is dilated then eroded twice, which can close a hole
+        that small, so detect on the raw mask and intersect afterwards.
+        """
+        raw = masks[idx].astype(bool)
+        cav = binary_fill_holes(raw) & ~raw
+        if cav.any():
+            return cav, "raw mask"
+        eroded = be_mask[idx].astype(bool)
+        cav = binary_fill_holes(eroded) & ~eroded
+        return (cav, "eroded mask") if cav.any() else (None, None)
+
+    def show(grid, title):
+        print(f"  {title}")
+        for row in grid:
+            print("    " + "".join("#" if v else "." for v in row))
+
+    def lesion_report(idx, stem):
+        cavity, source = find_cavity(idx)
+        bone = be_mask[idx].astype(bool)
+        t = target[idx]
+        if cavity is None:
+            print(f"\n{stem}: no enclosed cavity found in either mask.")
+            show(masks[idx].astype(bool), "raw mask")
+            show(bone, "eroded mask (be_mask)")
+            return None
+        ring = binary_dilation(cavity, iterations=LESION_RING_ITERATIONS) & bone & ~cavity
+        distal = bone & ~ring & ~cavity
+        print(f"\n{stem}  (cavity from {source}: {int(cavity.sum())} windows, "
+              f"proximal {int(ring.sum())}, distal {int(distal.sum())})")
+        if ring.sum() == 0 or distal.sum() == 0:
+            print("  too few windows on one side to compare")
+            return None
+        print(f"  {'field':<24}{'proximal med':>14}{'distal med':>13}"
+              f"{'difference':>13}{'ratio':>9}")
+        out = {}
         for label, field in fields.items():
-            err = relative_error(t, field[i]).reshape(20, 20)
+            err = relative_error(t, field[idx]).reshape(20, 20)
             sel_p = ring & (t.reshape(20, 20) != 0)
             sel_d = distal & (t.reshape(20, 20) != 0)
             if sel_p.sum() == 0 or sel_d.sum() == 0:
-                print(f"{label:<24}{'insufficient windows':>40}")
                 continue
-            mp, md = np.median(err[sel_p]), np.median(err[sel_d])
-            print(f"{label:<24}{mp:>14.1f}{md:>13.1f}{mp - md:>13.1f}"
-                  f"{np.percentile(err[sel_p], 95):>14.1f}")
-        print("-" * 82)
+            mp, md = float(np.median(err[sel_p])), float(np.median(err[sel_d]))
+            ratio = mp / md if md else float("nan")
+            print(f"  {label:<24}{mp:>14.1f}{md:>13.1f}{mp - md:>13.1f}{ratio:>9.2f}")
+            out[label] = (mp, md)
+        return out
+
+    lesion_report(index[fig3b], fig3b)
+
+    print("\n" + "-" * 82)
+    print("Same comparison for every lesioned slice in the test split")
+    print("-" * 82)
+    for stem in test_stems:
+        if "_LES_" in stem and stem in index and stem != fig3b:
+            lesion_report(index[stem], stem)
 
     # ---- (b) Additional test-set metrics -------------------------------------
     print("\n" + "=" * 82)
