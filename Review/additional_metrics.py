@@ -36,7 +36,7 @@ os.chdir(PROJECT_ROOT)
 
 import numpy as np
 import tensorflow as tf
-from scipy.ndimage import zoom, binary_dilation, binary_fill_holes
+from scipy.ndimage import zoom, binary_dilation, binary_fill_holes, binary_closing, label
 from scipy.stats import pearsonr
 
 try:
@@ -185,19 +185,33 @@ if __name__ == "__main__":
 
     def find_cavity(idx):
         """
-        Recover the drilled defect as an enclosed hole in the bone mask.
+        Recover the drilled defect from the bone mask.
 
-        The masks are natively 20x20, so a 5 mm cavity spans only two or three
-        windows. be_mask is dilated then eroded twice, which can close a hole
-        that small, so detect on the raw mask and intersect afterwards.
+        The masks are natively 20x20, so a 5 mm cavity spans only a few windows.
+        In most slices the defect is not an enclosed hole but a notch open to the
+        vertebral boundary, which binary_fill_holes cannot see. Try an enclosed
+        hole first, then fall back to the largest concavity, found by closing the
+        outline and subtracting the bone. Padding keeps the closing away from the
+        array border.
         """
         raw = masks[idx].astype(bool)
         cav = binary_fill_holes(raw) & ~raw
         if cav.any():
-            return cav, "raw mask"
-        eroded = be_mask[idx].astype(bool)
-        cav = binary_fill_holes(eroded) & ~eroded
-        return (cav, "eroded mask") if cav.any() else (None, None)
+            return cav, "enclosed hole"
+
+        pad = 6
+        padded = np.pad(raw, pad, constant_values=False)
+        structure = np.ones((3, 3), dtype=bool)
+        for iterations in (2, 3, 4, 5):
+            closed = binary_closing(padded, structure=structure, iterations=iterations)
+            candidate = (closed & ~padded)[pad:-pad, pad:-pad]
+            if candidate.sum() >= 3:
+                labelled, count = label(candidate)
+                if count:
+                    sizes = np.bincount(labelled.ravel())[1:]
+                    biggest = int(np.argmax(sizes)) + 1
+                    return labelled == biggest, f"concavity, closing x{iterations}"
+        return None, None
 
     def show(grid, title):
         print(f"  {title}")
