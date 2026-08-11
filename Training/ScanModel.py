@@ -2,6 +2,13 @@ from tensorflow.keras.layers import Layer, Input, Conv2D, BatchNormalization, Ma
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import LearningRateScheduler
+
+# Figure 1 panel typography, matching ImageResizer and Masking.
+plt.rcParams['font.family'] = ['Arial', 'Helvetica', 'DejaVu Sans']
+PANEL_FIGSIZE = (5, 3.75)
+TITLE_SIZE = 20
+LABEL_SIZE = 18
+TICK_SIZE = 16
 from matplotlib import pyplot as plt
 from tensorflow.keras.losses import Huber
 import tensorflow as tf
@@ -149,12 +156,16 @@ class ScanModel:
 
     def visualise(self, history):
         # Plot training and validation accuracy
+        plt.figure(figsize=PANEL_FIGSIZE)
         plt.plot(history.history['loss'][50:], label='Training Loss')
         plt.plot(history.history['val_loss'][50:], label='Validation Loss')
-        plt.title('Training and Validation Loss')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.legend()
+        plt.title('Training and Validation Loss', fontsize=TITLE_SIZE, fontweight='bold')
+        plt.xlabel('Epoch', fontsize=LABEL_SIZE)
+        plt.ylabel('Loss', fontsize=LABEL_SIZE)
+        plt.xticks(fontsize=TICK_SIZE)
+        plt.yticks(fontsize=TICK_SIZE)
+        plt.legend(fontsize=TICK_SIZE)
+        plt.tight_layout()
         plt.show()
 
     # MAE over masked area only

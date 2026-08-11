@@ -2,6 +2,14 @@ from matplotlib import pyplot as plt
 from LoadingData.FolderImageLoader import FolderImageLoader
 import re
 
+# Figure 1 panel typography. Matches TrainingAnalysis; titles are bold, as these
+# panels sit beneath the hand-drawn panel A, whose headings are bold.
+plt.rcParams['font.family'] = ['Arial', 'Helvetica', 'DejaVu Sans']
+PANEL_FIGSIZE = (5, 3.75)
+TITLE_SIZE = 20
+LABEL_SIZE = 18
+TICK_SIZE = 16
+
 class ImageResizer:
     trainPath = 'Data/Input/Scan'
     maskPath = 'Data/Input/Mask'
@@ -30,7 +38,12 @@ class ImageResizer:
 
     def visualise(self, example_index):
         loader = self.allLoaders[0].images[example_index]
+        plt.figure(figsize=PANEL_FIGSIZE)
         plt.imshow(loader.image, cmap='gray')
-        plt.title(f"Example {example_index + 1} of Input Image {loader.metadata['filename']}")
-        plt.colorbar()
+        plt.title(f"Example {example_index + 1} of Input Image {loader.metadata['filename']}",
+                  fontsize=TITLE_SIZE, fontweight='bold')
+        plt.xticks(fontsize=TICK_SIZE)
+        plt.yticks(fontsize=TICK_SIZE)
+        plt.colorbar().ax.tick_params(labelsize=TICK_SIZE)
+        plt.tight_layout()
         plt.show()

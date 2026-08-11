@@ -64,7 +64,7 @@ D2IM-Strain/
 │   └── mse-02-e6-041.h5            MSE loss, dropout=0.2, L2=1e-6
 │
 ├── Training/
-│   ├── DataSpilt.py                60/20/20 train/val/test split (vertebra-stratified)
+│   ├── DataSpilt.py                80/10/10 train/val/test split (random, by slice)
 │   ├── ScanModel.py                CNN architecture definition and training loop
 │   └── TrainingAnalysis.py         Post-training evaluation, correlation plots, and visualisation
 │
@@ -87,7 +87,7 @@ This will, in order:
 2. Compute binary erosion/dilation masks
 3. Compute ground-truth εzz strain fields from W-displacement targets
 4. Run the pre-trained D²IM displacement model to derive strain for comparison
-5. Split all data 60/20/20 into train/val/test sets
+5. Split all data 80/10/10 into train/val/test sets (200/25/26 images)
 6. Load the trained direct strain model (`Main/M1_best.h5`) and evaluate losses
 
 To retrain the CNN from scratch, uncomment the training block in `Main/Main.py`:
@@ -124,7 +124,7 @@ The dataset used for this study is publicly available on Figshare:
 
 It consists of XCT scans of 10 porcine vertebrae (5 intact, 5 with artificial focal lesions) at 39 µm isotropic voxel size, loaded in two conditions (*in situ*). Ground-truth strain fields were computed using the open-source [SPAM](https://www.spam-project.dev/) Python library with a DVC window size of 50 voxels.
 
-Tomograms were sliced into 2D cross-sections perpendicular to the loading axis (251 images after quality filtering), resized to 256×256 pixels. Data were split 60/20/20 (train/val/test), with slices from the same vertebra kept within a single split to avoid data leakage.
+Tomograms were sliced into 2D cross-sections perpendicular to the loading axis (251 images after quality filtering), resized to 256×256 pixels. Data were split 80/10/10 (train/val/test), giving 200/25/26 images. The split is applied to individual slices rather than whole vertebrae, so slices from the same vertebra may appear in more than one split. This follows the original D2IM study, and its implications for data leakage are discussed in the paper.
 
 ---
 

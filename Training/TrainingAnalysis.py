@@ -13,6 +13,19 @@ import seaborn as sns
 from scipy.stats import mannwhitneyu
 from Training.DataSpilt import DataSplit
 
+# --- Figure typography -------------------------------------------------------
+# Every figure below is exported at the same width, so one set of sizes gives
+# consistent text once the figures are placed on the page. Sizes were previously
+# set per figure and ranged from 13 to 30 on widths from 8 to 20 inches, which
+# made identically placed labels differ by more than a factor of two.
+plt.rcParams['font.family'] = ['Arial', 'Helvetica', 'DejaVu Sans']
+
+FIG_WIDTH = 15      # inches, shared by every figure
+TITLE_SIZE = 20
+LABEL_SIZE = 18
+TICK_SIZE = 16
+LEGEND_SIZE = 16
+
 
 # Coloured correlation analysis between predicted and observed values
 class TrainingAnalysis:
@@ -176,14 +189,14 @@ class TrainingAnalysis:
             for label in np.unique(labels):
                 label_indices = labels == label
                 plt.scatter(predicted_data[label_indices], target_data[label_indices], label=label, alpha=0.3, s=12)
-                plt.tick_params(labelsize=15)
+                plt.tick_params(labelsize=TICK_SIZE)
 
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
-            plt.title(f'Correlation: $R^2 =$ {r2:.2f}', fontsize=30)
-            plt.xlabel(f'Predicted {title2}', fontsize=25)
-            plt.ylabel(f'Measured {title}', fontsize=25)
+            plt.title(f'Correlation: $R^2 =$ {r2:.2f}', fontsize=TITLE_SIZE)
+            plt.xlabel(f'Predicted {title2}', fontsize=LABEL_SIZE)
+            plt.ylabel(f'Measured {title}', fontsize=LABEL_SIZE)
             plt.grid(True)
 
         vs = 39
@@ -194,7 +207,7 @@ class TrainingAnalysis:
         target_data_ezz = self.strain_test * vs
 
         # Create a figure with three subplots
-        fig, axs = plt.subplots(1, 2, figsize=(20, 10))
+        fig, axs = plt.subplots(1, 2, figsize=(FIG_WIDTH, 7.5))
 
         # Plot correlations for U displacement
         plt.sca(axs[0])
@@ -209,7 +222,7 @@ class TrainingAnalysis:
         # # Get the handles and labels for the legend from the first plot
         # handles, labels = axs[0,0].get_legend_handles_labels()
         # # Create the legend
-        # legend = fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.665, 0.2), title='Vertebra', title_fontsize=30, fontsize=25, scatterpoints=1)
+        # legend = fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.665, 0.2), title='Vertebra', title_fontsize=LABEL_SIZE, fontsize=LABEL_SIZE, scatterpoints=1)
 
         # # Increase the size of the legend markers and adjust their opacity
         # for handle in legend.legendHandles:
@@ -246,11 +259,11 @@ class TrainingAnalysis:
                 annot_kws={"size": 18},
                 ax=ax
             )
-            ax.tick_params(labelsize=16)
-            ax.set_title(title, fontsize=18)
+            ax.tick_params(labelsize=TICK_SIZE)
+            ax.set_title(title, fontsize=TITLE_SIZE)
 
         # Plot each confusion matrix with its own title
-        fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+        fig, axs = plt.subplots(1, 2, figsize=(FIG_WIDTH, 5))
 
         # I need this step!
         predicted_data_D2IM = np.where(self.mask_test.reshape(26, 400),
@@ -279,7 +292,7 @@ class TrainingAnalysis:
 
         for i in plot_num:  # Loop through each test sample
             # print(f"plot {i+1} of scan {scan_test_filenames[i]}")
-            plt.figure(figsize=(25, 5))  # Adjust the figure size to accommodate three plots
+            plt.figure(figsize=(FIG_WIDTH, 3))  # Adjust the figure size to accommodate three plots
 
             input_shape1 = (self.scan_train.shape[1], self.scan_train.shape[2], 1)
             input_shape2 = (self.mask_train.shape[1], self.mask_train.shape[2], 1)
@@ -466,14 +479,14 @@ class TrainingAnalysis:
             for label in np.unique(labels):
                 label_indices = labels == label
                 plt.scatter(predicted_data[label_indices], target_data[label_indices], label=label, alpha=0.3, s=12)
-                plt.tick_params(labelsize=15)
+                plt.tick_params(labelsize=TICK_SIZE)
 
             # Plot the linear regression line
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
-            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=24)
-            plt.xlabel(f'Predicted {title2}', fontsize=20)
-            plt.ylabel(f'Measured {title}', fontsize=20)
+            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=TITLE_SIZE)
+            plt.xlabel(f'Predicted {title2}', fontsize=LABEL_SIZE)
+            plt.ylabel(f'Measured {title}', fontsize=LABEL_SIZE)
             plt.grid(True)
 
         # Extract the data
@@ -485,7 +498,7 @@ class TrainingAnalysis:
                                      (self.predictions * self.global_std + self.global_mean), 0.0)
 
         # Create a figure with three subplots
-        fig, axs = plt.subplots(1, 2, figsize=(20, 10))
+        fig, axs = plt.subplots(1, 2, figsize=(FIG_WIDTH, 7.5))
 
         # Plot correlations for U displacement
         plt.sca(axs[0])
@@ -503,7 +516,7 @@ class TrainingAnalysis:
         handles, labels = axs[0].get_legend_handles_labels()
         # # Create the legend
         legend = fig.legend(handles, labels, loc='upper left', bbox_to_anchor=(0.08, 0.93),
-                            title='Vertebra', title_fontsize=18, fontsize=14, scatterpoints=1)
+                            title='Vertebra', title_fontsize=LABEL_SIZE, fontsize=LABEL_SIZE, scatterpoints=1)
 
         # # Increase the size of the legend markers and adjust their opacity
         for handle in legend.legendHandles:
@@ -541,15 +554,15 @@ class TrainingAnalysis:
             # Plot points with color highlighting
             plt.scatter(predicted_data, target_data, c=colors, alpha=0.5, s=12,
                         label='>10000' if np.any(highlight_filter) else '<=10000')
-            plt.tick_params(labelsize=15)
+            plt.tick_params(labelsize=TICK_SIZE)
 
             # Plot the line of best fit
             plt.plot(predicted_data, line_of_best_fit(predicted_data), color='black')
 
             # Plot title and labels
-            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=30)
-            plt.xlabel(f'Predicted {title2}', fontsize=25)
-            plt.ylabel(f'Measured {title}', fontsize=25)
+            plt.title(f'{title3}: $R^2 =$ {r2:.2f}', fontsize=TITLE_SIZE)
+            plt.xlabel(f'Predicted {title2}', fontsize=LABEL_SIZE)
+            plt.ylabel(f'Measured {title}', fontsize=LABEL_SIZE)
             plt.grid(True)
 
         # Extract the data
@@ -561,7 +574,7 @@ class TrainingAnalysis:
                                          (self.predictions * self.global_std + self.global_mean), 0.0)
 
         # Create a figure with three subplots
-        fig, axs = plt.subplots(1, 2, figsize=(20, 8))
+        fig, axs = plt.subplots(1, 2, figsize=(FIG_WIDTH, 6))
 
         # Plot correlations for U displacement
         plt.sca(axs[0])
@@ -579,7 +592,7 @@ class TrainingAnalysis:
         handles, labels = axs[0].get_legend_handles_labels()
         # # Create the legend
         legend = fig.legend(handles, labels, loc='upper left', bbox_to_anchor=(0.09, 0.90),
-                            title='Measured Value', title_fontsize=18, fontsize=14, scatterpoints=1)
+                            title='Measured Value', title_fontsize=LABEL_SIZE, fontsize=LABEL_SIZE, scatterpoints=1)
 
         # # Increase the size of the legend markers and adjust their opacity
         for handle in legend.legendHandles:
@@ -626,7 +639,7 @@ class TrainingAnalysis:
         # The specimen-level paired test reported in the text is the basis for
         # the significance claim (see Review/specimen_level_stats.py).
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(FIG_WIDTH, 11.25))
         bp = ax.boxplot(
             [relative_errors_1 * 100, relative_errors_2 * 100],
             vert=True,
@@ -640,9 +653,9 @@ class TrainingAnalysis:
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
-        ax.set_ylabel('Strain Error (%)', fontsize=16)
-        ax.set_title('Relative Error without bone yield', fontsize=18)
-        ax.tick_params(labelsize=16)
+        ax.set_ylabel('Strain Error (%)', fontsize=LABEL_SIZE)
+        ax.set_title('Relative Error without bone yield', fontsize=TITLE_SIZE)
+        ax.tick_params(labelsize=TICK_SIZE)
         ax.set_ylim(-10, 600)
         ax.yaxis.set_major_locator(plt.MultipleLocator(150))
         plt.tight_layout()
@@ -682,7 +695,7 @@ class TrainingAnalysis:
         print(f"N1={len(relative_errors_1)}, N2={len(relative_errors_2)}")
         print(f"Var1={np.var(relative_errors_1 * 100):.2f}, Var2={np.var(relative_errors_2 * 100):.2f}")
 
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(FIG_WIDTH, 11.25))
         bp = ax.boxplot(
             [relative_errors_1 * 100, relative_errors_2 * 100],
             vert=True,
@@ -696,9 +709,9 @@ class TrainingAnalysis:
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
 
-        ax.set_ylabel('Strain Error (%)', fontsize=16)
-        ax.set_title('Relative Error with bone yield', fontsize=18)
-        ax.tick_params(labelsize=16)
+        ax.set_ylabel('Strain Error (%)', fontsize=LABEL_SIZE)
+        ax.set_title('Relative Error with bone yield', fontsize=TITLE_SIZE)
+        ax.tick_params(labelsize=TICK_SIZE)
         ax.set_ylim(-10, 600)
         ax.yaxis.set_major_locator(plt.MultipleLocator(150))
         plt.tight_layout()
@@ -727,7 +740,7 @@ class TrainingAnalysis:
 
         for i in plot_num:  # Loop through each sample
             print("plot ", i)
-            plt.figure(figsize=(15, 10))  # Adjust the figure size to accommodate 2 plots
+            plt.figure(figsize=(FIG_WIDTH, 10))  # Adjust the figure size to accommodate 2 plots
 
             predicted_image = (np.flipud(predicted_data_D2IM[i].reshape(output_shape)))
             target_image = np.flipud(target_data_ezz[i].reshape(output_shape))
@@ -742,38 +755,38 @@ class TrainingAnalysis:
             ax_in1 = plt.subplot(gs[0, 0])
             input_image = np.flipud(self.input_data_test1[i].reshape(input_shape1[:2]))
             ax_in1.imshow(input_image, cmap='gray', vmin=0, vmax=1)
-            ax_in1.set_title("Input Image", fontsize=18)
+            ax_in1.set_title("Input Image", fontsize=TITLE_SIZE)
             ax_in1.axis('off')
 
             # --- Column 1, Row 2: Measured Strain ---
             ax_ms = plt.subplot(gs[1, 0])
             ax_ms.imshow(target_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax_ms.set_title("Measured Strain ε$_{zz}$ (με)", fontsize=18)
+            ax_ms.set_title("Measured Strain ε$_{zz}$ (με)", fontsize=LABEL_SIZE)
             ax_ms.axis('off')
 
             # --- Column 2, Row 1: Derived Strain ---
             ax2 = plt.subplot(gs[0, 1])
             im2 = ax2.imshow(predicted_image, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax2.set_title("Displacement-Derived $ε_{zz}$ (με)", fontsize=18)
+            ax2.set_title("Displacement-Derived $ε_{zz}$ (με)", fontsize=LABEL_SIZE)
             divider = make_axes_locatable(ax2)
             cax = divider.append_axes("right", size="5%", pad=0.0)
             cbar = plt.colorbar(im2, cax=cax)
             cbar.ax.yaxis.set_ticks_position("left")
             cbar.ax.yaxis.set_label_position("left")
-            cbar.ax.tick_params(colors='white', labelsize=14)
+            cbar.ax.tick_params(colors='white', labelsize=TICK_SIZE)
             ax2.axis('off')
 
             # --- Column 2, Row 2: Predicted Strain ---
             predicted_image2 = (np.flipud(predictions_model[i].reshape(output_shape)))
             ax5 = plt.subplot(gs[1, 1])
             im5 = ax5.imshow(predicted_image2, cmap='plasma_r', vmin=min_s, vmax=max_s)
-            ax5.set_title("Direct Strain $ε_{zz}$ (με)", fontsize=18)
+            ax5.set_title("Direct Strain $ε_{zz}$ (με)", fontsize=LABEL_SIZE)
             divider5 = make_axes_locatable(ax5)
             cax5 = divider5.append_axes("right", size="5%", pad=0.0)
             cbar5 = plt.colorbar(im5, cax=cax5)
             cbar5.ax.yaxis.set_ticks_position("left")
             cbar5.ax.yaxis.set_label_position("left")
-            cbar5.ax.tick_params(colors='white', labelsize=14)
+            cbar5.ax.tick_params(colors='white', labelsize=TICK_SIZE)
             ax5.axis('off')
 
             # --- Column 3, Row 1: Error (Derived) ---
@@ -781,7 +794,7 @@ class TrainingAnalysis:
             error = np.nan_to_num(error, posinf=0, neginf=0)
             ax3 = plt.subplot(gs[0, 2])
             im3 = ax3.imshow(error, cmap='jet', vmin=0, vmax=100)
-            ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
+            ax3.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=LABEL_SIZE)
             # --- added colorbar row 1 ---
             divider3 = make_axes_locatable(ax3)
             cax3 = divider3.append_axes("right", size="5%", pad=0.0)
@@ -789,14 +802,14 @@ class TrainingAnalysis:
             cbar3.set_ticks([10, 30, 50, 70, 90])
             cbar3.ax.yaxis.set_ticks_position("left")
             cbar3.ax.yaxis.set_label_position("left")
-            cbar3.ax.tick_params(colors='white', labelsize=14)
+            cbar3.ax.tick_params(colors='white', labelsize=TICK_SIZE)
 
             # --- Column 3, Row 2: Error (Predicted) ---
             error2 = np.abs((target_image - predicted_image2) / (target_image)) * 100
             error2 = np.nan_to_num(error2, posinf=0, neginf=0)
             ax6 = plt.subplot(gs[1, 2])
             im6 = ax6.imshow(error2, cmap='jet', vmin=0, vmax=100)
-            ax6.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=18)
+            ax6.set_title("Strain Error (%): $|(ε_{zz}-\overline{ε}_{zz})/ε_{zz}$|", fontsize=LABEL_SIZE)
             # --- added colorbar row 2 ---
             divider6 = make_axes_locatable(ax6)
             cax6 = divider6.append_axes("right", size="5%", pad=0.0)
@@ -804,7 +817,7 @@ class TrainingAnalysis:
             cbar6.set_ticks([10, 30, 50, 70, 90])
             cbar6.ax.yaxis.set_ticks_position("left")
             cbar6.ax.yaxis.set_label_position("left")
-            cbar6.ax.tick_params(colors='white', labelsize=14)
+            cbar6.ax.tick_params(colors='white', labelsize=TICK_SIZE)
 
             plt.tight_layout()  # Ensure plots don't overlap
             output_file = f"C:\\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\Strain_output_{i}.jpg"  # Specify the output file name
@@ -895,7 +908,7 @@ class TrainingAnalysis:
 
         plots = [24, 4, 3, 9]
 
-        fig = plt.figure(figsize=(20, 15))
+        fig = plt.figure(figsize=(FIG_WIDTH, 11.25))
         gs_main = gridspec.GridSpec(3, 4, hspace=0.05, wspace=0.05)
         im_list = []
 
@@ -920,8 +933,8 @@ class TrainingAnalysis:
 
         cbar_ax = fig.add_axes([0.91, 0.11, 0.02, 0.77])
         cbar = plt.colorbar(im_list[0], cax=cbar_ax)
-        cbar.set_label('Error (%)', fontsize=20)
-        cbar.ax.tick_params(labelsize=15)
+        cbar.set_label('Error (%)', fontsize=LABEL_SIZE)
+        cbar.ax.tick_params(labelsize=TICK_SIZE)
 
         output_file = r"C:\Users\kv7169h\PythonProjects\D2IM-Strain\Figures\Strain_comparison_highlighted.jpg"
         plt.savefig(output_file, dpi=500, bbox_inches='tight')
