@@ -4,7 +4,8 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import LearningRateScheduler
 
 # Figure 1 panel typography, matching ImageResizer and Masking.
-plt.rcParams['font.family'] = ['Arial', 'Helvetica', 'DejaVu Sans']
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
 PANEL_FIGSIZE = (5, 3.75)
 TITLE_SIZE = 20
 LABEL_SIZE = 18
