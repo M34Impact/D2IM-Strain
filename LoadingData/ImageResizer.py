@@ -3,13 +3,6 @@ from LoadingData.FolderImageLoader import FolderImageLoader
 from pathlib import Path
 import re
 
-# Figure 1 panel typography. Matches TrainingAnalysis; titles are bold, as these
-# panels sit beneath the hand-drawn panel A, whose headings are bold.
-PANEL_FIGSIZE = (5, 3.75)
-TITLE_SIZE = 20
-LABEL_SIZE = 18
-TICK_SIZE = 16
-
 # Resolved from this file rather than the working directory, so the data is found
 # whether the pipeline is launched from the project root or from Main/.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -68,12 +61,7 @@ class ImageResizer:
 
     def visualise(self, example_index):
         loader = self.allLoaders[0].images[example_index]
-        plt.figure(figsize=PANEL_FIGSIZE)
         plt.imshow(loader.image, cmap='gray')
-        plt.title(f"Example {example_index + 1} of Input Image {loader.metadata['filename']}",
-                  fontsize=TITLE_SIZE, fontweight='bold')
-        plt.xticks(fontsize=TICK_SIZE)
-        plt.yticks(fontsize=TICK_SIZE)
-        plt.colorbar().ax.tick_params(labelsize=TICK_SIZE)
-        plt.tight_layout()
+        plt.title(f"Example {example_index + 1} of Input Image {loader.metadata['filename']}")
+        plt.colorbar()
         plt.show()
