@@ -18,8 +18,6 @@ from Training.DataSpilt import DataSplit
 # consistent text once the figures are placed on the page. Sizes were previously
 # set per figure and ranged from 13 to 30 on widths from 8 to 20 inches, which
 # made identically placed labels differ by more than a factor of two.
-plt.rcParams['font.family'] = 'sans-serif'
-plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
 
 FIG_WIDTH = 15      # inches, shared by every figure
 TITLE_SIZE = 20
