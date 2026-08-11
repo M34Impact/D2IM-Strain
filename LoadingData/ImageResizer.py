@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 from LoadingData.FolderImageLoader import FolderImageLoader
+from pathlib import Path
 import re
 
 # Figure 1 panel typography. Matches TrainingAnalysis; titles are bold, as these
@@ -10,10 +11,15 @@ TITLE_SIZE = 20
 LABEL_SIZE = 18
 TICK_SIZE = 16
 
+# Resolved from this file rather than the working directory, so the data is found
+# whether the pipeline is launched from the project root or from Main/.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
 class ImageResizer:
-    trainPath = 'Data/Input/Scan'
-    maskPath = 'Data/Input/Mask'
-    testPathW = 'Data/Target/W'
+    trainPath = str(PROJECT_ROOT / 'Data' / 'Input' / 'Scan')
+    maskPath = str(PROJECT_ROOT / 'Data' / 'Input' / 'Mask')
+    testPathW = str(PROJECT_ROOT / 'Data' / 'Target' / 'W')
     folderPaths = [trainPath, maskPath, testPathW]
     allLoaders = []
 
